@@ -1,16 +1,12 @@
 package com.proyecto.slimefight;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.proyecto.slimefight.pantallas.MenuPrincipal;
+import com.proyecto.slimefight.pantallas.Pantalla;
+import com.proyecto.slimefight.pantallas.PantallaJuego;
+import com.proyecto.slimefight.pantallas.PantallaMenuPrincipal;
 import utiles.Config;
-import utiles.Utils;
 
 public class Main extends Game {
 
@@ -24,7 +20,8 @@ public class Main extends Game {
         shapeR = new ShapeRenderer();
         ancho = Config.ancho;
         alto = Config.alto;
-        setScreen(new MenuPrincipal(this));
+        // La primera pantalla que ve el jugador
+        setScreen(new PantallaJuego(this));
     }
 
     @Override

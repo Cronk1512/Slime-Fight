@@ -22,6 +22,7 @@ public class Lwjgl3Launcher {
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate + 1);
 
         configuration.setWindowedMode(640, 480);
+        configuration.setResizable(false);
         configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
 
         //// This could improve compatibility with Windows machines with buggy OpenGL drivers, Macs
