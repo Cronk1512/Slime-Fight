@@ -3,12 +3,16 @@ package com.proyecto.slimefight.pantallas;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.proyecto.slimefight.Main;
 import com.proyecto.slimefight.actores.Jugador;
 import utiles.Config;
 import utiles.TomarInput;
+import utiles.Utils;
 
 public class PantallaJuego extends Pantalla {
     private Stage stage;
@@ -26,7 +30,10 @@ public class PantallaJuego extends Pantalla {
 
         Gdx.input.setInputProcessor(inputs);
 
-        jugador = new Jugador();
+
+        Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
+        Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
+        jugador = new Jugador(new Sprite(tojo), new Sprite(tboca));
         jugador.setPosition(50, 50);
         jugador.setDebug(true);
 

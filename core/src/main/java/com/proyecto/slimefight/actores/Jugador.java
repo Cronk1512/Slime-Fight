@@ -1,18 +1,26 @@
 package com.proyecto.slimefight.actores;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import utiles.Config;
 import utiles.TomarInput;
 import com.badlogic.gdx.math.Rectangle;
+import utiles.Utils;
 
 import static utiles.Utils.Abs;
 
 public class Jugador extends Actor {
 
+    private Sprite ojos;
+    private Sprite boca;
     private Rectangle hitbox;
+    private TextureRegion pixelBlanco;
+
     private float width = 50;
     private float height = 50;
     private float moveX;
@@ -21,9 +29,15 @@ public class Jugador extends Actor {
     private float velocidad = 300;
     private float poderSalto = 300;
 
-    public Jugador() {
+    public Jugador(Sprite ojos, Sprite boca) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
+
+        this.ojos = ojos;
+        this.boca = boca;
+        pixelBlanco = new TextureRegion(new Texture(Utils.obtenerRutaInterna("pixel_blanco.png")));
+
+        setColor(Color.RED);
     }
 
     /*
@@ -63,6 +77,21 @@ public class Jugador extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        // Pinta el slime de un color (tiñiendo y estirando un pixel blanco)
+        float colorBatch = batch.getPackedColor();
+
+        Color colorActor = getColor();
+        batch.setColor(colorActor.r, colorActor.g, colorActor.b, colorActor.a);
+        batch.draw(pixelBlanco, getX(), getY(), getWidth(), getHeight());
+
+        ojos.setPosition(getX()+5, getY());
+        ojos.setSize(getWidth(), getHeight());
+        boca.setPosition(getX()+5, getY());
+        boca.setSize(getWidth(), getHeight());
+
+        ojos.draw(batch);
+        boca.draw(batch);
+        batch.setPackedColor(colorBatch);
     }
 
 }
