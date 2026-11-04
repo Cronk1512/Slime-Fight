@@ -6,3 +6,4 @@ ojos/ojos1.png
 ojos/ojos2.png
 ojos/ojos3.png
 pixel_blanco.png
+slime.png

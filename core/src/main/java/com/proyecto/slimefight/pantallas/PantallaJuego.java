@@ -32,9 +32,11 @@ public class PantallaJuego extends Pantalla {
 
         Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
         Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
+        tojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        tboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         jugador = new Slime(new Sprite(tojo), new Sprite(tboca), false);
         jugador.setPosition(50, 50);
-        //jugador.setDebug(true);
+        jugador.setDebug(false);
 
         stage.addActor(jugador);
     }
@@ -43,7 +45,7 @@ public class PantallaJuego extends Pantalla {
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        jugador.update(delta, 0, inputs);
+        jugador.update(delta, inputs);
 
         stage.act(delta);
         stage.draw();
