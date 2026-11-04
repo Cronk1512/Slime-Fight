@@ -5,5 +5,5 @@ package utiles;
 public abstract class Config {
     public static int ancho = 640;
     public static int alto = 480;
-    public static float gravedad = 3.5f;
+    public static float gravedad = 2200f;
 }

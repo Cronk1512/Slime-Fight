@@ -38,9 +38,10 @@ public class Slime extends Actor {
     private float moveX;
     private float moveY;
     boolean puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
+    float gravedad;
 
     private final float VELOCIDAD = 300;
-    private final float PODER_SALTO = 300;
+    private final float PODER_SALTO = 900;
 
     public Slime(Sprite ojos, Sprite boca, boolean dadoVuelta) {
         this.setSize(width, height);
@@ -54,8 +55,7 @@ public class Slime extends Actor {
 
 
         if (dadoVuelta) {
-            ojos.flip(true, false);
-            boca.flip(true, false);
+            darVuelta();
         }
 
         setColor(Color.RED);
@@ -73,15 +73,13 @@ public class Slime extends Actor {
     }
 
     private void moverPersonaje(float delta, TomarInput input) {
-        float gravedad = Config.gravedad;
-
         // Movimiento horizontal
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
         setX(getX() + moveX * VELOCIDAD * delta);
 
         // Movimiento vertical
-        if (getY() > 0 && moveY > 0) moveY -= gravedad;
-        if (getY() > 0 && moveY <= 0) moveY -= gravedad * 2.5f;
+        gravedad = (moveY > 0) ? Config.gravedad : Config.gravedad * 1.5f;
+
         if (puedeSaltar && input.arriba) {
             moveY = PODER_SALTO;
             timerAplastar = 0; // cancela animacion de aterrizar
@@ -90,6 +88,10 @@ public class Slime extends Actor {
             animScaleX = 0.7f;
         }
         if (!input.arriba && moveY > 0) moveY = 0;
+        if (getY() > 0) {
+            moveY -= gravedad * delta;
+        }
+        setY(getY() + moveY * delta);
         if (getY() < 0) {
             puedeSaltar = true;
             setY(0);
@@ -100,15 +102,12 @@ public class Slime extends Actor {
             timerAplastar = 1f;
             moveY = 0;
         }
-        setY(getY() + moveY * delta);
 
         // Voltear si va para atras
         if (moveX < 0 && !volteado) {
-            volteado = true;
             darVuelta();
         }
         if (moveX > 0 && volteado) {
-            volteado = false;
             darVuelta();
         }
 
@@ -175,6 +174,7 @@ public class Slime extends Actor {
     }
 
     public void darVuelta() {
+        volteado = !volteado;
         ojos.flip(true, false);
         boca.flip(true, false);
     }

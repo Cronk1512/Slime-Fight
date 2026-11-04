@@ -33,11 +33,11 @@ public class Utils {
         float yTopRight = topY;
 
         if (inclinacion > 0) {
-            // Leaning Right: Right edge expands, left edge subtly compresses
+            // derechai
             yTopRight += (inclinacion * 0.25f);
             yTopLeft  -= (inclinacion * 0.10f);
         } else if (inclinacion < 0) {
-            // Leaning Left: Left edge expands, right edge subtly compresses
+            // izquerda
             yTopLeft  += (Math.abs(inclinacion) * 0.25f);
             yTopRight -= (Math.abs(inclinacion) * 0.10f);
         }
