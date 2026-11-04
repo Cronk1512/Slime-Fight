@@ -5,11 +5,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.proyecto.slimefight.Main;
-import com.proyecto.slimefight.actores.Jugador;
+import com.proyecto.slimefight.actores.Slime;
 import utiles.Config;
 import utiles.TomarInput;
 import utiles.Utils;
@@ -17,7 +16,7 @@ import utiles.Utils;
 public class PantallaJuego extends Pantalla {
     private Stage stage;
     private TomarInput inputs = new TomarInput();;
-    private Jugador jugador;
+    private Slime jugador;
     private OrthographicCamera camara;
 
     public PantallaJuego(Main main) {
@@ -33,9 +32,9 @@ public class PantallaJuego extends Pantalla {
 
         Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
         Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
-        jugador = new Jugador(new Sprite(tojo), new Sprite(tboca));
+        jugador = new Slime(new Sprite(tojo), new Sprite(tboca), false);
         jugador.setPosition(50, 50);
-        jugador.setDebug(true);
+        //jugador.setDebug(true);
 
         stage.addActor(jugador);
     }
