@@ -1,0 +1,2 @@
+.temp/e2775780/gdxarm64.dll
+libgdx.png
