@@ -1,2 +1,10 @@
-.temp/e2775780/gdxarm64.dll
+armas/arma1.png
+bocas/boca1.png
+bocas/boca2.png
+bocas/boca3.png
 libgdx.png
+ojos/ojos1.png
+ojos/ojos2.png
+ojos/ojos3.png
+pixel_blanco.png
+slime.png

@@ -12,15 +12,21 @@ import utiles.TomarInput;
 import com.badlogic.gdx.math.Rectangle;
 import utiles.Utils;
 
+import java.awt.*;
+
 public class Slime extends Actor {
 
 
     // Sprites
     private Sprite ojos;
     private Sprite boca;
-    private Rectangle hitbox;
+    public Rectangle hitbox;
+    Texture textura = new Texture(Utils.obtenerRutaInterna("slime.png"));
     private TextureRegion texturaSlime;
     private boolean volteado;
+    private float width = 50;
+    private float height = 50;
+    private Rectangle mano;
 
     // cosas de animacion de inclinacion
     float walkTimer = 0;
@@ -32,33 +38,37 @@ public class Slime extends Actor {
     private static final float LERP_SPEED = 4.0f;
     private static final float REBOTE_IDLE = 0.03f;
 
-    // con getScaleX() o Y podes obtener la escala actual, pero width y height determinan ancho y alto default.
-    private float width = 50;
-    private float height = 50;
+    // vars de movimiento
     private float moveX;
     private float moveY;
-    boolean puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
+    float gravedad;
+    private float impulsoX = 0;
+    private float impulsoY = 0;
 
+    // flags
+    boolean puedeSaltar = true;
+    boolean puedeDisparar = false;
+
+    // stats
+    public float porcentajeVida = 0;
     private final float VELOCIDAD = 300;
-    private final float PODER_SALTO = 300;
+    private final float PODER_SALTO = 900;
+    private Arma arma;
 
-    public Slime(Sprite ojos, Sprite boca, boolean dadoVuelta) {
+    public Slime(Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
 
         this.ojos = ojos;
         this.boca = boca;
-        Texture textura = new Texture(Utils.obtenerRutaInterna("slime.png"));
         textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         texturaSlime = new TextureRegion(textura);
 
-
         if (dadoVuelta) {
-            ojos.flip(true, false);
-            boca.flip(true, false);
+            darVuelta();
         }
 
-        setColor(Color.RED);
+        setColor(color);
     }
 
     /*
@@ -70,18 +80,35 @@ public class Slime extends Actor {
 
     public void update(float delta, TomarInput input) {
         moverPersonaje(delta, input);
+        ajustarHitbox();
+        if (arma != null) arma.update(delta, mano.getX(), mano.getY(), volteado);
     }
 
     private void moverPersonaje(float delta, TomarInput input) {
-        float gravedad = Config.gravedad;
-
         // Movimiento horizontal
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
-        setX(getX() + moveX * VELOCIDAD * delta);
+        setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
+
+        // Shoot ze gun
+        if (!input.espacio) puedeDisparar = true;
+        if (input.espacio && puedeDisparar && arma != null) {
+            arma.disparar();
+            puedeDisparar = false;
+        }
+
+        // Impulsos
+        if (impulsoX != 0) {
+            impulsoX = MathUtils.lerp(impulsoX, 0f, delta * 2);
+            if (impulsoX <= 10) impulsoX = 0;
+        }
+        if (impulsoY != 0) {
+            impulsoY = MathUtils.lerp(impulsoY, 0f, delta * 2);
+            if (getY() <= 0) impulsoY = 0;
+        }
 
         // Movimiento vertical
-        if (getY() > 0 && moveY > 0) moveY -= gravedad;
-        if (getY() > 0 && moveY <= 0) moveY -= gravedad * 2.5f;
+        gravedad = (moveY > 0) ? Config.gravedad : Config.gravedad * 1.5f;
+
         if (puedeSaltar && input.arriba) {
             moveY = PODER_SALTO;
             timerAplastar = 0; // cancela animacion de aterrizar
@@ -89,9 +116,15 @@ public class Slime extends Actor {
             animScaleY = 1.3f;
             animScaleX = 0.7f;
         }
+
         if (!input.arriba && moveY > 0) moveY = 0;
+        if (getY() > 0) {
+            moveY -= gravedad * delta;
+            puedeSaltar = false;
+        }
+        setY(getY() + (moveY + impulsoY) * delta);
         if (getY() < 0) {
-            puedeSaltar = true;
+            puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
             setY(0);
             float fuerzaImpacto = MathUtils.clamp(Math.abs(moveY) / PODER_SALTO, 0.2f, 1.0f);
 
@@ -100,19 +133,16 @@ public class Slime extends Actor {
             timerAplastar = 1f;
             moveY = 0;
         }
-        setY(getY() + moveY * delta);
 
         // Voltear si va para atras
         if (moveX < 0 && !volteado) {
-            volteado = true;
             darVuelta();
         }
         if (moveX > 0 && volteado) {
-            volteado = false;
             darVuelta();
         }
 
-        // Animacion procedural
+        // Animacion
         float objetivoInclinacion = 0f;
         if (moveX != 0) {
             objetivoInclinacion = moveX == 1 ? MAX_INCLINACION : -MAX_INCLINACION;
@@ -154,6 +184,15 @@ public class Slime extends Actor {
         }
     }
 
+    private void ajustarHitbox() {
+        if (volteado) {
+            mano = new Rectangle(getX() + 5, getY() + getHeight()/2, 1, 1);
+        } else {
+            mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
+        }
+        hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (volteado) {
@@ -174,9 +213,26 @@ public class Slime extends Actor {
         boca.draw(batch);
     }
 
+    public void recibirDano(Bala bala) {
+        porcentajeVida += bala.dano;
+        int dir = bala.dirDerecha() ? 1 : -1;
+        System.out.println(porcentajeVida);
+        aplicarImpulso(dir * bala.knockback, 15);
+    }
+
+    public void aplicarImpulso(float x, float y) {
+        impulsoX = impulsoX + x * porcentajeVida;
+        impulsoY += y * porcentajeVida;
+    }
+
     public void darVuelta() {
+        volteado = !volteado;
         ojos.flip(true, false);
         boca.flip(true, false);
+    }
+
+    public void setArma(Arma arma) {
+        this.arma = arma;
     }
 
 }
