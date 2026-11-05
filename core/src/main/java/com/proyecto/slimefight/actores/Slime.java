@@ -12,6 +12,8 @@ import utiles.TomarInput;
 import com.badlogic.gdx.math.Rectangle;
 import utiles.Utils;
 
+import java.awt.*;
+
 public class Slime extends Actor {
 
 
@@ -19,10 +21,12 @@ public class Slime extends Actor {
     private Sprite ojos;
     private Sprite boca;
     public Rectangle hitbox;
+    Texture textura = new Texture(Utils.obtenerRutaInterna("slime.png"));
     private TextureRegion texturaSlime;
     private boolean volteado;
     private float width = 50;
     private float height = 50;
+    private Rectangle mano;
 
     // cosas de animacion de inclinacion
     float walkTimer = 0;
@@ -49,23 +53,22 @@ public class Slime extends Actor {
     public float porcentajeVida = 0;
     private final float VELOCIDAD = 300;
     private final float PODER_SALTO = 900;
+    private Arma arma;
 
-    public Slime(Sprite ojos, Sprite boca, boolean dadoVuelta) {
+    public Slime(Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
 
         this.ojos = ojos;
         this.boca = boca;
-        Texture textura = new Texture(Utils.obtenerRutaInterna("slime.png"));
         textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         texturaSlime = new TextureRegion(textura);
-
 
         if (dadoVuelta) {
             darVuelta();
         }
 
-        setColor(Color.RED);
+        setColor(color);
     }
 
     /*
@@ -78,6 +81,7 @@ public class Slime extends Actor {
     public void update(float delta, TomarInput input) {
         moverPersonaje(delta, input);
         ajustarHitbox();
+        if (arma != null) arma.update(delta, mano.getX(), mano.getY(), volteado);
     }
 
     private void moverPersonaje(float delta, TomarInput input) {
@@ -85,11 +89,10 @@ public class Slime extends Actor {
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
         setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
 
-        // debug balas
+        // Shoot ze gun
         if (!input.espacio) puedeDisparar = true;
-        if (input.espacio && puedeDisparar) {
-            Bala bala = new Bala(getX()-200, getY()+5, 1, 0, 7, 1000, 13, 235);
-            this.getStage().addActor(bala);
+        if (input.espacio && puedeDisparar && arma != null) {
+            arma.disparar();
             puedeDisparar = false;
         }
 
@@ -139,7 +142,7 @@ public class Slime extends Actor {
             darVuelta();
         }
 
-        // Animacion procedural
+        // Animacion
         float objetivoInclinacion = 0f;
         if (moveX != 0) {
             objetivoInclinacion = moveX == 1 ? MAX_INCLINACION : -MAX_INCLINACION;
@@ -182,7 +185,12 @@ public class Slime extends Actor {
     }
 
     private void ajustarHitbox() {
-        hitbox = new Rectangle(getX(), getY(), getWidth() -5, getHeight() -5);
+        if (volteado) {
+            mano = new Rectangle(getX() + 5, getY() + getHeight()/2, 1, 1);
+        } else {
+            mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
+        }
+        hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
     }
 
     @Override
@@ -213,14 +221,18 @@ public class Slime extends Actor {
     }
 
     public void aplicarImpulso(float x, float y) {
-        impulsoX = impulsoX + x * (porcentajeVida/100);
-        impulsoY += y * (porcentajeVida/100);
+        impulsoX = impulsoX + x * porcentajeVida;
+        impulsoY += y * porcentajeVida;
     }
 
     public void darVuelta() {
         volteado = !volteado;
         ojos.flip(true, false);
         boca.flip(true, false);
+    }
+
+    public void setArma(Arma arma) {
+        this.arma = arma;
     }
 
 }

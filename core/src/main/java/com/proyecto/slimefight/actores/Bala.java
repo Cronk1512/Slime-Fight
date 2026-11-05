@@ -1,5 +1,6 @@
 package com.proyecto.slimefight.actores;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,17 +11,17 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import utiles.Utils;
 
 public class Bala extends Actor {
+    private final Texture pixel = new Texture(Utils.obtenerRutaInterna("pixel_blanco.png"));
+    public Rectangle hitbox;
     private final float direccionX;
     private final float direccionY;
-    private float tiempoDeVida;
-    private Texture pixel = new Texture(Utils.obtenerRutaInterna("pixel_blanco.png"));
-    public Rectangle hitbox;
 
-    public float dano;
+    public int dano;
     public float knockback;
     private float velocidad;
+    private float tiempoDeVida;
 
-    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, float dano, float knockback, float rango) {
+    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, int dano, float knockback, float rango) {
         // Tamaño y pos
         setX(x);
         setY(y);
@@ -40,7 +41,7 @@ public class Bala extends Actor {
         tiempoDeVida = rango;
     }
 
-    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, float dano, float knockback) {
+    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, int dano, float knockback) {
         // Tamaño y pos
         setX(x);
         setY(y);
@@ -87,7 +88,10 @@ public class Bala extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        Color oldcolor = batch.getColor();
+        batch.setColor(Color.YELLOW);
         batch.draw(pixel, getX(), getY(), getWidth(), getHeight());
+        batch.setColor(oldcolor);
     }
 
 }

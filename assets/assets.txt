@@ -1,3 +1,4 @@
+armas/arma1.png
 bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
