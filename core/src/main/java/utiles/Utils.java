@@ -6,9 +6,21 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.proyecto.slimefight.actores.Bala;
+import com.proyecto.slimefight.actores.Slime;
 
 public class Utils {
+
+    public static boolean verificarColision(Slime jugador, Bala bala) {
+        if (jugador.hitbox.overlaps(bala.hitbox)) {
+           System.out.println("COLISON!");
+           return true;
+        }
+        return false;
+    }
+
     public static void dibujarSlime(Batch batch, TextureRegion region, Actor actor, float inclinacion, float scaleX, float scaleY) {
         float[] vertices = new float[20];
 

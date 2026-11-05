@@ -18,9 +18,11 @@ public class Slime extends Actor {
     // Sprites
     private Sprite ojos;
     private Sprite boca;
-    private Rectangle hitbox;
+    public Rectangle hitbox;
     private TextureRegion texturaSlime;
     private boolean volteado;
+    private float width = 50;
+    private float height = 50;
 
     // cosas de animacion de inclinacion
     float walkTimer = 0;
@@ -32,14 +34,19 @@ public class Slime extends Actor {
     private static final float LERP_SPEED = 4.0f;
     private static final float REBOTE_IDLE = 0.03f;
 
-    // con getScaleX() o Y podes obtener la escala actual, pero width y height determinan ancho y alto default.
-    private float width = 50;
-    private float height = 50;
+    // vars de movimiento
     private float moveX;
     private float moveY;
-    boolean puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
     float gravedad;
+    private float impulsoX = 0;
+    private float impulsoY = 0;
 
+    // flags
+    boolean puedeSaltar = true;
+    boolean puedeDisparar = false;
+
+    // stats
+    public float porcentajeVida = 0;
     private final float VELOCIDAD = 300;
     private final float PODER_SALTO = 900;
 
@@ -70,12 +77,31 @@ public class Slime extends Actor {
 
     public void update(float delta, TomarInput input) {
         moverPersonaje(delta, input);
+        ajustarHitbox();
     }
 
     private void moverPersonaje(float delta, TomarInput input) {
         // Movimiento horizontal
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
-        setX(getX() + moveX * VELOCIDAD * delta);
+        setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
+
+        // debug balas
+        if (!input.espacio) puedeDisparar = true;
+        if (input.espacio && puedeDisparar) {
+            Bala bala = new Bala(getX()-200, getY()+5, 1, 0, 7, 1000, 13, 235);
+            this.getStage().addActor(bala);
+            puedeDisparar = false;
+        }
+
+        // Impulsos
+        if (impulsoX != 0) {
+            impulsoX = MathUtils.lerp(impulsoX, 0f, delta * 2);
+            if (impulsoX <= 10) impulsoX = 0;
+        }
+        if (impulsoY != 0) {
+            impulsoY = MathUtils.lerp(impulsoY, 0f, delta * 2);
+            if (getY() <= 0) impulsoY = 0;
+        }
 
         // Movimiento vertical
         gravedad = (moveY > 0) ? Config.gravedad : Config.gravedad * 1.5f;
@@ -87,13 +113,15 @@ public class Slime extends Actor {
             animScaleY = 1.3f;
             animScaleX = 0.7f;
         }
+
         if (!input.arriba && moveY > 0) moveY = 0;
         if (getY() > 0) {
             moveY -= gravedad * delta;
+            puedeSaltar = false;
         }
-        setY(getY() + moveY * delta);
+        setY(getY() + (moveY + impulsoY) * delta);
         if (getY() < 0) {
-            puedeSaltar = true;
+            puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
             setY(0);
             float fuerzaImpacto = MathUtils.clamp(Math.abs(moveY) / PODER_SALTO, 0.2f, 1.0f);
 
@@ -153,6 +181,10 @@ public class Slime extends Actor {
         }
     }
 
+    private void ajustarHitbox() {
+        hitbox = new Rectangle(getX(), getY(), getWidth() -5, getHeight() -5);
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (volteado) {
@@ -171,6 +203,18 @@ public class Slime extends Actor {
 
         ojos.draw(batch);
         boca.draw(batch);
+    }
+
+    public void recibirDano(Bala bala) {
+        porcentajeVida += bala.dano;
+        int dir = bala.dirDerecha() ? 1 : -1;
+        System.out.println(porcentajeVida);
+        aplicarImpulso(dir * bala.knockback, 15);
+    }
+
+    public void aplicarImpulso(float x, float y) {
+        impulsoX = impulsoX + x * (porcentajeVida/100);
+        impulsoY += y * (porcentajeVida/100);
     }
 
     public void darVuelta() {
