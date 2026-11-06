@@ -3,6 +3,20 @@ bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
 libgdx.png
+mapa/MapaGame.tmx
+mapa/TileSet/GrassLand_Background_1.tsx
+mapa/TileSet/GrassLand_Background_5.tsx
+mapa/TileSet/MAPA#3.tsx
+mapa/TileSet/MAPA#4.tsx
+mapa/TileSet/PROPS.tsx
+mapa/TileSet/Tiles/Floor Tiles1.png
+mapa/TileSet/Tiles/GrassLand_Background_1.png
+mapa/TileSet/Tiles/GrassLand_Background_5.png
+mapa/TileSet/Tiles/GrassLand_ChoppedTree.png
+mapa/TileSet/Tiles/GrassLand_TallGrass_1.png
+mapa/TileSet/Tiles/GrassLand_TallGrass_2.png
+mapa/TileSet/Tiles/GrassLand_Tree.png
+mapa/TileSet/Tiles/Grassland_Terrain_ExtraTiles.png
 ojos/ojos1.png
 ojos/ojos2.png
 ojos/ojos3.png
