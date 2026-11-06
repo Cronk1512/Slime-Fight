@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 
 public class PantallaJuego extends Pantalla {
     private Stage stage;
+    private TomarInput inputs = new TomarInput();;
     private TomarInput inputs = new TomarInput();
     private Slime jugador;
     private Slime botardo;
@@ -73,8 +75,9 @@ public class PantallaJuego extends Pantalla {
         jugador = new Slime(new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
         jugador.setPosition(50, 50);
         jugador.setDebug(false);
-        Arma armatest = new Arma(0, -10, 76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")), 3, 16, 25, 1.5f, 5);
+        Arma armatest = new Arma(0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")), 3, 16, 25, 1.5f, 5);
         jugador.setArma(armatest);
+
 
         botardo = new Slime(new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
         botardo.setPosition(150, 50);
@@ -99,7 +102,7 @@ public class PantallaJuego extends Pantalla {
         botardo.update(delta, inputs);
         stage.act(delta);
 
-        // Separar actores en listas para colisiones
+        // Separar actores en listas
         ArrayList<Slime> jugadores = new ArrayList<>();
         ArrayList<Bala> balas = new ArrayList<>();
         for (Actor actor : stage.getActors()) {
@@ -126,7 +129,7 @@ public class PantallaJuego extends Pantalla {
 
     @Override
     public void resize(int width, int height) {
-        super.resize(width, height);
+        super.resize(width,height);
     }
 
     @Override
