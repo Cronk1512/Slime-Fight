@@ -2,18 +2,16 @@ package utiles;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.proyecto.slimefight.actores.Bala;
 import com.proyecto.slimefight.actores.Slime;
 
 public class Utils {
 
-    public static boolean verificarColision(Slime jugador, Bala bala) {
+    public static boolean verificarColisionBala(Slime jugador, Bala bala) {
         if (jugador.hitbox.overlaps(bala.hitbox)) {
            System.out.println("COLISON!");
            return true;

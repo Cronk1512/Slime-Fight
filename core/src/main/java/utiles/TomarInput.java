@@ -2,31 +2,32 @@ package utiles;
 
 import com.badlogic.gdx.InputAdapter;
 import static com.badlogic.gdx.Input.*;
+import static utiles.Config.*;
 
 public class TomarInput extends InputAdapter {
     public boolean izquierda;
     public boolean derecha;
-    public boolean arriba;
+    public boolean saltar;
     public boolean abajo;
-    public boolean espacio;
+    public boolean disparar;
 
     @Override
     public boolean keyDown(int keycode) {
         switch (keycode) {
-            case Keys.LEFT:
+            case Controles.MOVER_IZQ:
                 izquierda = true;
                 break;
-            case Keys.RIGHT:
+            case Controles.MOVER_DER:
                 derecha = true;
                 break;
-            case Keys.UP:
-                arriba = true;
+            case Controles.SALTAR:
+                saltar = true;
                 break;
-            case Keys.DOWN:
+            case Controles.MOVER_ABA:
                 abajo = true;
                 break;
-            case Keys.SPACE:
-                espacio = true;
+            case Controles.DISPARAR:
+                disparar = true;
                 break;
         }
         return true;
@@ -35,20 +36,20 @@ public class TomarInput extends InputAdapter {
     @Override
     public boolean keyUp(int keycode) {
         switch (keycode) {
-            case Keys.LEFT:
+            case Controles.MOVER_IZQ:
                 izquierda = false;
                 break;
-            case Keys.RIGHT:
+            case Controles.MOVER_DER:
                 derecha = false;
                 break;
-            case Keys.UP:
-                arriba = false;
+            case Controles.SALTAR:
+                saltar = false;
                 break;
-            case Keys.DOWN:
+            case Controles.MOVER_ABA:
                 abajo = false;
                 break;
-            case Keys.SPACE:
-                espacio = false;
+            case Controles.DISPARAR:
+                disparar = false;
                 break;
         }
         return true;

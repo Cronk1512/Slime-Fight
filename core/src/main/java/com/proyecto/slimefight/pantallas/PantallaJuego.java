@@ -6,10 +6,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.proyecto.slimefight.Main;
 import com.proyecto.slimefight.actores.Arma;
 import com.proyecto.slimefight.actores.Bala;
@@ -32,12 +32,16 @@ public class PantallaJuego extends Pantalla {
     }
 
     public void show() {
-        camara = new OrthographicCamera(Config.ancho, (float) Config.alto / 2);
-        stage = new Stage();
+        float width = Gdx.graphics.getWidth();
+        float height = Gdx.graphics.getHeight();
+        camara = new OrthographicCamera(Config.ancho, Config.alto * height/width);
+        ExtendViewport viewport = new ExtendViewport(Config.ancho, Config.alto);
+
+        stage = new Stage(viewport);
 
         Gdx.input.setInputProcessor(inputs);
 
-
+        // debug slimes
         Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
         Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
         Texture bojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos1.png"));
@@ -49,7 +53,8 @@ public class PantallaJuego extends Pantalla {
         jugador = new Slime(new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
         jugador.setPosition(50, 50);
         jugador.setDebug(false);
-        Arma armatest = new Arma(0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")), 3, 16, 25, 1.5f, 5);
+        Arma armatest = new Arma(0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")),
+            3, 16, 25f, 0f, 7, 2f, 10, 1);
         jugador.setArma(armatest);
 
 
@@ -83,7 +88,7 @@ public class PantallaJuego extends Pantalla {
         // Chequear colisiones
         for (Slime jugador : jugadores) {
             for (Bala bala : balas) {
-                if (Utils.verificarColision(jugador, bala)) {
+                if (Utils.verificarColisionBala(jugador, bala)) {
                     jugador.recibirDano(bala);
                     bala.remove();
                 }

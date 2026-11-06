@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.*;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
@@ -17,11 +18,15 @@ public class Arma extends Actor {
     private float knockback;
     private float rango;
     private float cooldown;
-    private float durabilidad;
+    private int durabilidad;
+    private float dispersion;
+    private float tamañoBala;
+    private float cantBalas;
 
     private float timerCooldown = 0;
 
-    public Arma(float offsetX, float offsetY, float width, float height, Texture textura, int dano, float knockback, float rango, float cooldown, float durabilidad) {
+    public Arma(float offsetX, float offsetY, float width, float height, Texture textura,
+                int dano, float knockback, float rango, float dispersion, float tamañoBala, float cooldown, int durabilidad, int cantBalas) {
         textura.setFilter(TextureFilter.Nearest,TextureFilter.Nearest);
         sprite = new Sprite(textura);
 
@@ -35,17 +40,31 @@ public class Arma extends Actor {
         this.knockback = knockback;
         this.rango = rango;
         this.cooldown = cooldown;
+        this.durabilidad = durabilidad;
+        this.dispersion = dispersion;
+        if (tamañoBala<5) tamañoBala = 5;
+        this.tamañoBala = Math.abs(tamañoBala);
+        if (cantBalas==0) cantBalas = 1;
+        this.cantBalas = Math.abs(cantBalas);
     }
 
     public void update(float delta, float x, float y, boolean volteado) {
         setX(x + offX);
         setY(y + offY);
 
+        sprite.setPosition(getX()-getWidth()/2, getY()-getHeight()/2);
+        sprite.setOriginCenter();
+
         if (this.volteado != volteado) {
             darVuelta();
         }
 
-        if (timerCooldown > 0) timerCooldown -= delta * 16f;
+        if (timerCooldown > 0) {
+            timerCooldown -= delta * 16f;
+            sprite.setRotation(MathUtils.lerp(sprite.getRotation(), 0, delta * 16f));
+        } else {
+            sprite.setRotation(0);
+        }
     }
 
     public void disparar() {
@@ -54,14 +73,24 @@ public class Arma extends Actor {
             Bala bala;
             Vector2 puntoDeFuego;
             durabilidad -= 1;
+
+
+
             if (!volteado) {
+                sprite.setRotation(40);
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
-                bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, 1, 0, 7, 1000, dano, knockback, rango);
+                for (int i = 0; i < cantBalas; i++) {
+                    bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, 1, tamañoBala, 1000, dano, knockback, rango, dispersion);
+                    this.getStage().addActor(bala);
+                }
             } else {
+                sprite.setRotation(-40);
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
-                bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, -1, 0, 7, 1000, dano, knockback, rango);
+                for (int i = 0; i < cantBalas; i++) {
+                    bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, -1, tamañoBala, 1000, dano, knockback, rango, dispersion);
+                    this.getStage().addActor(bala);
+                }
             }
-            this.getStage().addActor(bala);
         }
     }
 
@@ -72,6 +101,11 @@ public class Arma extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.draw(sprite, getX()-getWidth()/2, getY()-getHeight()/2, getWidth(), getHeight());
+        sprite.draw(batch);
+        //batch.draw(sprite, getX()-getWidth()/2, getY()-getHeight()/2, getWidth(), getHeight());
+    }
+
+    public int getDurabilidad() {
+        return durabilidad;
     }
 }
