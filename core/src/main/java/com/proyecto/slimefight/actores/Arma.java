@@ -9,11 +9,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class Arma extends Actor {
-    private Sprite sprite;
+    private final Sprite sprite;
     boolean volteado = false;
     private float offX;
     private float offY;
 
+    private String nombre;
     private int dano;
     private float knockback;
     private float rango;
@@ -25,7 +26,7 @@ public class Arma extends Actor {
 
     private float timerCooldown = 0;
 
-    public Arma(float offsetX, float offsetY, float width, float height, Texture textura,
+    public Arma(String nombre, float offsetX, float offsetY, float width, float height, Texture textura,
                 int dano, float knockback, float rango, float dispersion, float tamañoBala, float cooldown, int durabilidad, int cantBalas) {
         textura.setFilter(TextureFilter.Nearest,TextureFilter.Nearest);
         sprite = new Sprite(textura);
@@ -36,6 +37,7 @@ public class Arma extends Actor {
         offX = offsetX;
         offY = offsetY;
 
+        this.nombre = nombre;
         this.dano = dano;
         this.knockback = knockback;
         this.rango = rango;

@@ -2,6 +2,7 @@ armas/arma1.png
 bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
+fondo_puntos.png
 libgdx.png
 ojos/ojos1.png
 ojos/ojos2.png

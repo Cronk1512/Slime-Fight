@@ -53,7 +53,7 @@ public class PantallaJuego extends Pantalla {
         jugador = new Slime(new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
         jugador.setPosition(50, 50);
         jugador.setDebug(false);
-        Arma armatest = new Arma(0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")),
+        Arma armatest = new Arma("AK47", 0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")),
             3, 16, 25f, 0f, 7, 2f, 10, 1);
         jugador.setArma(armatest);
 

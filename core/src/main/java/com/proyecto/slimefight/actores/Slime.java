@@ -14,7 +14,6 @@ import utiles.Utils;
 
 public class Slime extends Actor {
 
-
     // Sprites
     private Sprite ojos;
     private Sprite boca;
@@ -50,8 +49,8 @@ public class Slime extends Actor {
     // stats
     private float porcentajeVida = 0;
     private float vidas = 3;
-    private final float VELOCIDAD = 300;
-    private final float PODER_SALTO = 900;
+    private float VELOCIDAD = 300;
+    private float PODER_SALTO = 900;
     private Arma arma;
 
     public Slime(Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
@@ -220,7 +219,7 @@ public class Slime extends Actor {
     }
 
     public void aplicarImpulso(float x, float y) {
-        impulsoX = impulsoX + x * porcentajeVida;
+        impulsoX += x * porcentajeVida;
         impulsoY += y * porcentajeVida;
     }
 
