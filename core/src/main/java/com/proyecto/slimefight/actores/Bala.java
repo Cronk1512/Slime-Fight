@@ -10,6 +10,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import utiles.Utils;
 
+import java.util.Random;
+
 public class Bala extends Actor {
     private final Texture pixel = new Texture(Utils.obtenerRutaInterna("pixel_blanco.png"));
     public Rectangle hitbox;
@@ -21,7 +23,8 @@ public class Bala extends Actor {
     private float velocidad;
     private float tiempoDeVida;
 
-    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, int dano, float knockback, float rango) {
+    // Bala
+    public Bala(float x, float y, float dirX, float scaleX, float velocidad, int dano, float knockback, float rango, float dispersion) {
         // Tamaño y pos
         setX(x);
         setY(y);
@@ -30,7 +33,9 @@ public class Bala extends Actor {
         hitbox = new Rectangle(getX(),getY(),getWidth(),getHeight());
 
         // Direccion
-        Vector2 vector = new Vector2(MathUtils.clamp(dirX, -1f, 1f), MathUtils.clamp(dirY, -1f, 1f)).nor();
+        Random rng = new Random();
+        float disp = (float) rng.nextGaussian() * dispersion;
+        Vector2 vector = new Vector2(MathUtils.clamp(dirX, -1f, 1f), MathUtils.clamp(disp, -1f, 1f)).nor();
         direccionX = vector.x;
         direccionY = vector.y;
 
@@ -39,25 +44,6 @@ public class Bala extends Actor {
         this.dano = dano;
         this.knockback = knockback;
         tiempoDeVida = rango;
-    }
-
-    public Bala(float x, float y, float dirX, float dirY, float scaleX, float velocidad, int dano, float knockback) {
-        // Tamaño y pos
-        setX(x);
-        setY(y);
-        setWidth(scaleX);
-        setHeight(5);
-
-        // Direccion
-        Vector2 vector = new Vector2(MathUtils.clamp(dirX, -1f, 1f), MathUtils.clamp(dirY, -1f, 1f)).nor();
-        direccionX = vector.x;
-        direccionY = vector.y;
-
-        // le stats
-        this.velocidad = velocidad;
-        this.dano = dano;
-        this.knockback = knockback;
-        tiempoDeVida = 25;
     }
 
     public boolean deleteCheck() {
@@ -88,10 +74,10 @@ public class Bala extends Actor {
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        Color oldcolor = batch.getColor();
+        Color oldColor = new Color(batch.getColor());
         batch.setColor(Color.YELLOW);
         batch.draw(pixel, getX(), getY(), getWidth(), getHeight());
-        batch.setColor(oldcolor);
+        batch.setColor(oldColor);
     }
 
 }

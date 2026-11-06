@@ -12,8 +12,6 @@ import utiles.TomarInput;
 import com.badlogic.gdx.math.Rectangle;
 import utiles.Utils;
 
-import java.awt.*;
-
 public class Slime extends Actor {
 
 
@@ -50,7 +48,8 @@ public class Slime extends Actor {
     boolean puedeDisparar = false;
 
     // stats
-    public float porcentajeVida = 0;
+    private float porcentajeVida = 0;
+    private float vidas = 3;
     private final float VELOCIDAD = 300;
     private final float PODER_SALTO = 900;
     private Arma arma;
@@ -89,13 +88,6 @@ public class Slime extends Actor {
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
         setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
 
-        // Shoot ze gun
-        if (!input.espacio) puedeDisparar = true;
-        if (input.espacio && puedeDisparar && arma != null) {
-            arma.disparar();
-            puedeDisparar = false;
-        }
-
         // Impulsos
         if (impulsoX != 0) {
             impulsoX = MathUtils.lerp(impulsoX, 0f, delta * 2);
@@ -109,7 +101,7 @@ public class Slime extends Actor {
         // Movimiento vertical
         gravedad = (moveY > 0) ? Config.gravedad : Config.gravedad * 1.5f;
 
-        if (puedeSaltar && input.arriba) {
+        if (puedeSaltar && input.saltar) {
             moveY = PODER_SALTO;
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
@@ -117,7 +109,7 @@ public class Slime extends Actor {
             animScaleX = 0.7f;
         }
 
-        if (!input.arriba && moveY > 0) moveY = 0;
+        if (!input.saltar && moveY > 0) moveY = 0;
         if (getY() > 0) {
             moveY -= gravedad * delta;
             puedeSaltar = false;
@@ -132,6 +124,13 @@ public class Slime extends Actor {
             animScaleY = 0.4f / fuerzaImpacto;
             timerAplastar = 1f;
             moveY = 0;
+        }
+
+        // Shoot ze gun
+        if (!input.disparar) puedeDisparar = true;
+        if (input.disparar && puedeDisparar && arma != null) {
+            arma.disparar();
+            puedeDisparar = false;
         }
 
         // Voltear si va para atras
