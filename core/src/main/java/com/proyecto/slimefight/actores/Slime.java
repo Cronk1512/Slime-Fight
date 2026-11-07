@@ -6,13 +6,19 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import utiles.Config;
+import utiles.Constantes;
 import utiles.TomarInput;
 import com.badlogic.gdx.math.Rectangle;
 import utiles.Utils;
 
 public class Slime extends Actor {
+
+    // Cuerpo
+    private Body cuerpo;
+    private int contactosPiso = 0;
 
     // Sprites
     private Sprite ojos;
@@ -41,10 +47,7 @@ public class Slime extends Actor {
 
     // vars de movimiento
     private float moveX;
-    private float moveY;
-    float gravedad;
-    private float impulsoX = 0;
-    private float impulsoY = 0;
+    private float velYPrevia;
 
     // flags
     boolean puedeSaltar = true;
@@ -58,11 +61,11 @@ public class Slime extends Actor {
     // stats
     private float porcentajeVida = 0;
     private float vidas = 3;
-    private float VELOCIDAD = 300;
-    private float PODER_SALTO = 900;
+    private float velocidad = 5.0f; // Metros por segundo (1m = 32p)
+    private float poder_salto = 12.0f;
     private Arma arma;
 
-    public Slime(Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
+    public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
         pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
@@ -70,6 +73,8 @@ public class Slime extends Actor {
         paredderCollider = new Rectangle(getX()+2, getY(), getWidth(), getHeight());
         techoCollider = new Rectangle(getX(), getY()+2, getWidth(), getHeight());
 
+        this.cuerpo = cuerpo;
+        cuerpo.setUserData(this);
         this.ojos = ojos;
         this.boca = boca;
         textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -91,34 +96,27 @@ public class Slime extends Actor {
 
     public void update(float delta, TomarInput input) {
         moverPersonaje(delta, input);
-        ajustarHitbox();
-        if (arma != null) arma.update(delta, mano.getX(), mano.getY(), volteado);
+        sincronizarConCuerpo();
+        if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado);
+    }
+
+    private void sincronizarConCuerpo() {
+        setPosition(
+            cuerpo.getPosition().x * Constantes.PPM - getWidth() / 2f,
+            cuerpo.getPosition().y * Constantes.PPM - getHeight() / 2f
+        );
     }
 
     private void moverPersonaje(float delta, TomarInput input) {
         // Movimiento horizontal
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
-        if (tocandoParedD) if (moveX > 0) moveX = 0;
-        if (tocandoParedI) if (moveX < 0) moveX = 0;
-        setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
-
-        // Impulsos
-        if (impulsoX != 0) {
-            impulsoX = MathUtils.lerp(impulsoX, 0f, delta * 2);
-            if (impulsoX <= 10 && impulsoX >= -10) impulsoX = 0;
-            if (tocandoParedD && impulsoX > 0) impulsoX = 0;
-            if (tocandoParedI && impulsoX < 0) impulsoX = 0;
-        }
-        if (impulsoY != 0) {
-            impulsoY = MathUtils.lerp(impulsoY, 0f, delta * 2);
-            if (tocandoTecho) impulsoY = 0;
-        }
 
         // Movimiento vertical
-        gravedad = (moveY > 0) ? Config.gravedad : Config.gravedad * 1.5f;
-
+        boolean estabaEnPiso = tocandoPiso;
+        tocandoPiso = contactosPiso > 0;
         if (puedeSaltar && input.saltar) {
-            moveY = PODER_SALTO;
+            cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, 0);
+            cuerpo.applyLinearImpulse(0, cuerpo.getMass() * poder_salto, cuerpo.getWorldCenter().x, cuerpo.getWorldCenter().y, true);
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
             debeAterrizar = true;
@@ -126,26 +124,21 @@ public class Slime extends Actor {
             animScaleX = 0.7f;
         }
 
-        if (!input.saltar && moveY > 0) moveY = 0;
-        if (tocandoTecho) cancelarMovimientoY();
-        if (!tocandoPiso) {
-            moveY -= gravedad * delta;
-            puedeSaltar = false;
-        } else {
-            setY(getY()+1);
+
+        if (tocandoPiso && !estabaEnPiso) { // Aterrizo
             puedeSaltar = true;
-        }
-        setY(getY() + (moveY + impulsoY) * delta);
-        if (getY() < 0) {
-
-            setY(0);
-            float fuerzaImpacto = MathUtils.clamp(Math.abs(moveY) / PODER_SALTO, 0.2f, 1.0f);
-
+            float fuerzaImpacto = MathUtils.clamp(Math.abs(velYPrevia) / poder_salto, 0.2f, 1.0f);
             animScaleX = 1.5f * fuerzaImpacto;
             animScaleY = 0.4f / fuerzaImpacto;
             timerAplastar = 1f;
-            moveY = 0;
         }
+
+        if (!input.saltar && cuerpo.getLinearVelocity().y > 0) {
+            cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, 0);
+        }
+
+        velYPrevia = cuerpo.getLinearVelocity().y;
+        cuerpo.setLinearVelocity(moveX * velocidad, cuerpo.getLinearVelocity().y);
 
         // Shoot ze gun
         if (!input.disparar) puedeDisparar = true;
@@ -172,7 +165,7 @@ public class Slime extends Actor {
 
         if (!tocandoPiso) {
             // estirar al saltar
-            if (moveY > 0) {
+            if (cuerpo.getLinearVelocity().y > 0) {
                 // mientras va para arriba
                 animScaleY = MathUtils.lerp(animScaleY, 1.0f, delta * 2.5f);
                 animScaleX = MathUtils.lerp(animScaleX, 1.0f, delta * 2.5f);
@@ -190,7 +183,7 @@ public class Slime extends Actor {
             animScaleY = 1.0f - (wobbleWave * 0.3f);
         } else {
             // default ass walk
-            if (moveX == 0 && moveY == 0) {
+            if (moveX == 0 && Math.abs(cuerpo.getLinearVelocity().y) < 0.01f) {
                 // si no se mueve rebota como animacion idle
                 walkTimer += delta * 12f;
                 animScaleY = 1.0f - (MathUtils.sin(walkTimer) * REBOTE_IDLE);
@@ -204,17 +197,20 @@ public class Slime extends Actor {
         }
     }
 
-    private void ajustarHitbox() {
+    public void actualizarColliders() {
         if (volteado) {
             mano = new Rectangle(getX() + 5, getY() + getHeight()/2, 1, 1);
         } else {
             mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
         }
         hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
-        pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
-        paredizqCollider = new Rectangle(getX()-2, getY(), getWidth(), getHeight());
-        paredderCollider = new Rectangle(getX()+2, getY(), getWidth(), getHeight());
-        techoCollider = new Rectangle(getX(), getY()+2, getWidth(), getHeight());
+
+        float grosor = 2f;
+        float margen = 4f;
+        pisoCollider = new Rectangle(getX() + margen, getY()-grosor, getWidth()-margen*2, grosor);
+        techoCollider = new Rectangle(getX() + margen, getY()+getHeight(), getWidth()-margen*2, grosor);
+        paredizqCollider = new Rectangle(getX()-grosor, getY() + margen, grosor, getHeight()-margen*2);
+        paredderCollider = new Rectangle(getX()+getWidth(), getY() + margen, grosor, getHeight()-margen*2);
     }
 
     @Override
@@ -231,7 +227,7 @@ public class Slime extends Actor {
             boca.setSize(getWidth(), getHeight() * animScaleY);
         }
 
-        Utils.dibujarSlime(batch, texturaSlime, this, inclinacion, animScaleX, animScaleY);
+        Utils.dibujarSlime(batch, texturaSlime, this, cuerpo, inclinacion, animScaleX, animScaleY);
 
         ojos.draw(batch);
         boca.draw(batch);
@@ -245,8 +241,7 @@ public class Slime extends Actor {
     }
 
     public void aplicarImpulso(float x, float y) {
-        impulsoX += x * porcentajeVida;
-        impulsoY += y * porcentajeVida;
+        cuerpo.applyLinearImpulse(cuerpo.getMass() * x, cuerpo.getMass() * y, cuerpo.getWorldCenter().x, cuerpo.getWorldCenter().y, true);
     }
 
     public void darVuelta() {
@@ -255,43 +250,14 @@ public class Slime extends Actor {
         boca.flip(true, false);
     }
 
-
-    public void cancelarMovimientoY() {
-        moveY = 0;
-        impulsoY = 0;
+    public void setPosicionPx(float x, float y) {
+        cuerpo.setTransform(x / Constantes.PPM, (y + getHeight() / 2f) / Constantes.PPM, 0);
+        cuerpo.setLinearVelocity(0, 0);
+        sincronizarConCuerpo();
     }
 
-    public void cancelarMovimientoX() {
-        moveX = 0;
-        impulsoX = 0;
+    public void sumarContactoPiso(int d) {
+        contactosPiso += d;
     }
-
-    public float getMoveX() {
-        return moveX;
-    }
-    public float getMoveY() {
-        return moveY;
-    }
-    public void setMoveX(float moveX) {
-        this.moveX = moveX;
-    }
-    public void setMoveY(float moveY) {
-        this.moveY = moveY;
-    }
-    public void setArma(Arma arma) {
-        this.arma = arma;
-    }
-    public void setTocandoPiso(Boolean tocandoPiso) {
-        this.tocandoPiso = tocandoPiso;
-    }
-    public void setTocandoTecho(Boolean tocandoTecho) {
-        this.tocandoTecho = tocandoTecho;
-    }
-    public void setTocandoParedD(Boolean tocandoParedD) {
-        this.tocandoParedD = tocandoParedD;
-    }public void setTocandoParedI(Boolean tocandoParedI) {
-        this.tocandoParedI = tocandoParedI;
-    }
-
 
 }

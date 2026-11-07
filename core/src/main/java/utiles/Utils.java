@@ -4,18 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.proyecto.slimefight.actores.Bala;
-import com.proyecto.slimefight.actores.Terreno;
 import com.proyecto.slimefight.actores.Slime;
 
 public class Utils {
 
-    public static boolean verificarTocandoTerreno(Rectangle rect, Terreno piso) {
+    public static Polygon rectanguloAPoligono(Rectangle rect) {
         // Convierte rectangulo en poligono para verificar colision
         float[] verticesRect = new float[] {
             rect.x, rect.y,
@@ -23,9 +20,39 @@ public class Utils {
             rect.x + rect.width, rect.y + rect.height,
             rect.x, rect.y + rect.height
         };
+        return new Polygon(verticesRect);
+    }
 
-        Polygon rectPoligono = new Polygon(verticesRect);
-        return Intersector.overlapConvexPolygons(rectPoligono, piso.figura);
+    public static void contactoPies(Contact c, int d) {
+        Fixture a = c.getFixtureA(), b = c.getFixtureB();
+        if ("pies".equals(a.getUserData()) && !b.isSensor()) ((Slime) a.getBody().getUserData()).sumarContactoPiso(d);
+        if ("pies".equals(b.getUserData()) && !a.isSensor()) ((Slime) b.getBody().getUserData()).sumarContactoPiso(d);
+    }
+
+    public static Body crearCuerpo(float x, float y, float width, float height, BodyDef.BodyType tipo, World mundo) {
+        BodyDef bodyDef = new BodyDef();
+        bodyDef.type = tipo;
+        bodyDef.position.set(x / Constantes.PPM, y / Constantes.PPM);
+        bodyDef.fixedRotation = true;
+        Body cuerpo = mundo.createBody(bodyDef);
+
+        PolygonShape figura = new PolygonShape();
+        PolygonShape pies = new PolygonShape();
+        figura.setAsBox(width / 2 / Constantes.PPM, height / 2 / Constantes.PPM);
+        pies.setAsBox(10f / Constantes.PPM, 2f / Constantes.PPM,
+            new Vector2(0, -16f / Constantes.PPM), 0);
+
+        FixtureDef fdprincipal = new FixtureDef();
+        FixtureDef fdpies = new FixtureDef();
+        fdprincipal.shape = figura;
+        fdprincipal.friction = 0;
+        fdpies.shape = pies;
+        fdpies.isSensor = true;
+        cuerpo.createFixture(fdprincipal).setUserData("principal");
+        cuerpo.createFixture(fdpies).setUserData("pies");
+        figura.dispose();
+        pies.dispose();
+        return cuerpo;
     }
 
     public static boolean verificarColisionBala(Slime jugador, Bala bala) {
@@ -36,17 +63,27 @@ public class Utils {
         return false;
     }
 
-    public static void dibujarSlime(Batch batch, TextureRegion region, Actor actor, float inclinacion, float scaleX, float scaleY) {
+    public static void dibujarSlime(Batch batch, TextureRegion region, Actor actor, Body cuerpo, float inclinacion, float scaleX, float scaleY) {
         float[] vertices = new float[20];
 
-        float x = actor.getX();
-        float y = actor.getY();
-        float w = actor.getWidth() * actor.getScaleX() * scaleX;
-        float h = actor.getHeight() * actor.getScaleY() * scaleY;
+        // 1. Convert Box2D center-position (meters) to screen-coordinates (pixels)
+        float centerX = cuerpo.getPosition().x * Constantes.PPM;
+        float centerY = cuerpo.getPosition().y * Constantes.PPM;
+
+        // 2. Base width and height calculations on the visual Actor dimensions
+        float actorW = actor.getWidth() * actor.getScaleX();
+        float actorH = actor.getHeight() * actor.getScaleY();
+
+        float w = actorW * scaleX;
+        float h = actorH * scaleY;
+
+        // 3. Shift calculations from the physical center to the graphical bottom-left corner
+        // This anchors the base perfectly to where the physics body sits on the ground
+        float x = centerX - (w / 2f);
+        float y = centerY - (actorH / 2f); // Shifts down by half the standard height
 
         // Base vertices stay strictly anchored to the floor
-        float widthDifference = w - actor.getWidth();
-        float baseLeftX = MathUtils.round(x - (widthDifference / 2f));
+        float baseLeftX = MathUtils.round(x);
         float baseRightX = MathUtils.round(x + w);
         float baseY = MathUtils.round(y);
         float topY = MathUtils.round(y + h);
@@ -60,16 +97,14 @@ public class Utils {
         float yTopRight = topY;
 
         if (inclinacion > 0) {
-            // derechai
             yTopRight += (inclinacion * 0.25f);
             yTopLeft  -= (inclinacion * 0.10f);
         } else if (inclinacion < 0) {
-            // izquerda
             yTopLeft  += (Math.abs(inclinacion) * 0.25f);
             yTopRight -= (Math.abs(inclinacion) * 0.10f);
         }
 
-        // Texture UV Mapping
+        // Texture UV Mapping & Color Setup
         float u = region.getU();
         float v = region.getV2();
         float u2 = region.getU2();

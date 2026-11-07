@@ -6,25 +6,18 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.proyecto.slimefight.Main;
-import com.proyecto.slimefight.actores.Arma;
-import com.proyecto.slimefight.actores.Bala;
 import com.proyecto.slimefight.actores.Slime;
-import com.proyecto.slimefight.actores.Terreno;
-import utiles.Config;
-import utiles.TomarInput;
-import utiles.Utils;
+import utiles.*;
 
 import java.util.ArrayList;
 
@@ -35,29 +28,73 @@ public class PantallaJuego extends Pantalla {
     private Slime botardo;
     private OrthographicCamera camara;
     private ExtendViewport viewport;
-    private TiledMap mapa;
-    private OrthogonalTiledMapRenderer renderer;
     float mapaAnchoPx;
     float mapaAltoPx;
+    float acumulador = 0;
+
+    private World world;
+    private Box2DDebugRenderer box2DDebugRenderer;
+    private SpriteBatch batch;
+    private OrthogonalTiledMapRenderer renderer;
+    private TiledMap mapa;
+    private AyudanteMapas ayudanteMapas;
+    private final Matrix4 matrizDebug = new Matrix4();
 
     ArrayList<Slime> slimes;
-    ArrayList<Terreno> terrenos;
 
     public PantallaJuego(Main main) {
         super(main);
     }
 
+
+
     @Override
     public void show() {
         // Inicializar cosas
         camara = new OrthographicCamera(Config.ancho , Config.alto);
-        viewport = new ExtendViewport(Config.ancho, Config.alto);
-        viewport.setCamera(camara);
-        stage = new Stage(viewport);
+        viewport = new ExtendViewport(Config.ancho, Config.alto, camara);
+        world = new World(new Vector2(0, -Constantes.GRAVEDAD), false);
+        box2DDebugRenderer = new Box2DDebugRenderer();
+        batch = new SpriteBatch();
         mapa = new TmxMapLoader().load("mapa/mapaTest.tmx");
-        renderer = new OrthogonalTiledMapRenderer(mapa);
+        ayudanteMapas = new AyudanteMapas(mapa, this);
+        renderer = ayudanteMapas.leerMapa();
+        stage = new Stage(viewport);
         slimes = new ArrayList<>();
-        terrenos = new ArrayList<>();
+        Gdx.input.setInputProcessor(inputs);
+
+        // contact listener bullshit
+        world.setContactListener(new ContactListener() {
+            @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); }
+            @Override public void endContact(Contact c) { Utils.contactoPies(c, -1); }
+            @Override public void preSolve(Contact c, Manifold m) {}
+            @Override public void postSolve(Contact c, ContactImpulse i) {}
+        });
+
+        // debug slimes
+        Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
+        Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
+        tojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        tboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        Texture bojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos1.png"));
+        Texture bboca = new Texture(Utils.obtenerRutaInterna("bocas/boca1.png"));
+        bojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        jugador = new Slime(Utils.crearCuerpo(32, 32, 32, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
+        botardo = new Slime(Utils.crearCuerpo(32, 32, 32, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
+        // TODO: sacar lista de slimes de pantalla lobby multiplayer
+        slimes.add(jugador);
+        slimes.add(botardo);
+        int posID = 0;
+        for (Slime slime : slimes) {
+            stage.addActor(slime);
+            if (posID > ayudanteMapas.getPuntosDeSpawn().size() - 1) posID = 0;
+            Vector2 spawn = ayudanteMapas.getPuntosDeSpawn().get(posID);
+            slime.setPosicionPx(spawn.x, spawn.y);
+            posID++;
+        }
+
+        /*
 
         int tileWidth = mapa.getProperties().get("tilewidth", Integer.class);
         int tileHeight = mapa.getProperties().get("tileheight", Integer.class);
@@ -70,82 +107,31 @@ public class PantallaJuego extends Pantalla {
         viewport.getCamera().position.set(mapaAnchoPx / 2f, mapaAltoPx / 2f, 0);
         viewport.getCamera().update();
 
-        Gdx.input.setInputProcessor(inputs);
-
-        Texture tojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos3.png"));
-        Texture tboca = new Texture(Utils.obtenerRutaInterna("bocas/boca3.png"));
-        Texture bojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos1.png"));
-        Texture bboca = new Texture(Utils.obtenerRutaInterna("bocas/boca1.png"));
-        tojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        tboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        bojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-
-        // debug slimes
-        jugador = new Slime(
-            new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
-        Arma armatest = new Arma("AK47", 0, -10,76, 22, new Texture(Utils.obtenerRutaInterna("armas/arma1.png")),
-            3, 16, 25f, 0f, 7, 2f, 10, 1);
-        jugador.setArma(armatest);
-
-        botardo = new Slime(
-            new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
-
-        // TODO: sacar lista de slimes de pantalla lobby multiplayer
-        slimes.add(jugador);
-        slimes.add(botardo);
-
-        leerMapa();
-
-        // Añade todos los jugadores al stage
-        for (Slime slime : slimes) {
-            stage.addActor(slime);
-        }
-
-        // debug añade el armatest al jugador
+// debug añade el armatest al jugador
         stage.addActor(armatest);
-    }
 
-    private void leerMapa() {
-        // Terrenos
-        MapLayer capaFisica = mapa.getLayers().get("Fisico");
-        for (MapObject objeto : capaFisica.getObjects()) {
-            if (objeto.getProperties().get("type", String.class).equals("Piso")) {
-                terrenos.add(new Terreno((PolygonMapObject) objeto));
-            }
-        }
-
-        // Entidades
-        MapLayer capaEntidades = mapa.getLayers().get("Entidades");
-        ArrayList<Vector2> puntosDeSpawn = new ArrayList<>();
-        for (MapObject objeto : capaEntidades.getObjects()) {
-            if (objeto.getProperties().get("type", String.class).equals("Spawn")) {
-                puntosDeSpawn.add(new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class)));
-            }
-        }
-
-        int posID = 0;
-        for (Slime slime : slimes) {
-            if (posID > puntosDeSpawn.size() - 1) posID = 0;
-            slime.setPosition(puntosDeSpawn.get(posID).x, puntosDeSpawn.get(posID).y);
-            posID++;
-        }
-
-        MapObject posCamara = capaEntidades.getObjects().get("camaraPos");
-        stage.getViewport().getCamera().position.set(posCamara.getProperties().get("x",Float.class), posCamara.getProperties().get("y",Float.class), 0);
+         */
     }
 
     @Override
     public void render(float delta) {
+        update(delta);
+
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        viewport.apply();
+        renderer.render();
+
+        stage.act(delta);
+        stage.draw();
+
+        matrizDebug.set(camara.combined).scl(Constantes.PPM);
+        box2DDebugRenderer.render(world, matrizDebug);
+        /*
         //camara.zoom += (float) (0.1 * delta);
         //stage.getViewport().getCamera().position.set(mapaAnchoPx / 2f, mapaAltoPx / 2f, 0);
         stage.getViewport().getCamera().update();
-
-        renderer.setView(camara);
-        renderer.render();
 
         jugador.update(delta, inputs);
         botardo.update(delta, inputs);
@@ -161,14 +147,52 @@ public class PantallaJuego extends Pantalla {
 
         // Chequear colisiones
         for (Slime jugador : slimes) {
+            // Terrenos
+            boolean piso = false, techo = false, paredD = false, paredI = false;
             for (Terreno terreno : terrenos) {
-                System.out.println(Utils.verificarTocandoTerreno(jugador.pisoCollider, terreno));
-                jugador.setTocandoTecho(Utils.verificarTocandoTerreno(jugador.techoCollider, terreno));
-                jugador.setTocandoPiso(Utils.verificarTocandoTerreno(jugador.pisoCollider, terreno));
-                jugador.setTocandoParedD(Utils.verificarTocandoTerreno(jugador.paredderCollider, terreno));
-                jugador.setTocandoParedI(Utils.verificarTocandoTerreno(jugador.paredizqCollider, terreno));
+                Polygon t = terreno.figura;
+                Polygon rectPoligono = Utils.rectanguloAPoligono(new Rectangle(jugador.getX(), jugador.getY(),
+                    jugador.getWidth(), jugador.getHeight()));
+
+                if (Intersector.overlapConvexPolygons(rectPoligono, t)) {
+                    float penIzq = (rectPoligono.getX() + rectPoligono.getScaleX()) - t.getX();     // slime entra por la izquierda del terreno
+                    float penDer = (t.getX() + t.getScaleY()) - rectPoligono.getX();                // entra por la derecha
+                    float penAbajo = (rectPoligono.getY() + rectPoligono.getScaleY()) - t.getY();   // entra por debajo (golpea techo)
+                    float penArriba = (t.getY() + t.getScaleY()) - rectPoligono.getY();             // entra por arriba (aterriza)
+
+                    float min = Math.min(Math.min(penIzq, penDer), Math.min(penAbajo, penArriba));
+
+                    if (min == penArriba && jugador.getMoveY() <= 0) {
+                        jugador.setY(t.getY() + t.getScaleY());   // lo apoya encima
+                        jugador.setMoveY(0);
+                    } else if (min == penAbajo && jugador.getMoveY() > 0) {
+                        jugador.setY(t.getY() - jugador.getHeight());
+                        jugador.cancelarMovimientoY();
+                    } else if (min == penIzq) {
+                        jugador.setX(t.getX() - jugador.getWidth());
+                    } else if (min == penDer) {
+                        jugador.setX(t.getX() + t.getScaleX());
+                    }
+                }
+
+                jugador.actualizarColliders();
+
+                techo |= Utils.verificarTocandoTerreno(jugador.techoCollider, terreno);
+                paredD |= Utils.verificarTocandoTerreno(jugador.paredderCollider, terreno);
+                piso |= Utils.verificarTocandoTerreno(jugador.pisoCollider, terreno);
+                paredI |= Utils.verificarTocandoTerreno(jugador.paredizqCollider, terreno);
+                if (piso && jugador.getMoveY() <= 0) {
+                    jugador.setY(terreno.figura.getY() + terreno.figura.getScaleY());
+                    jugador.setMoveY(0);
+                }
             }
 
+            jugador.setTocandoTecho(techo);
+            jugador.setTocandoParedD(paredD);
+            jugador.setTocandoPiso(piso);
+            jugador.setTocandoParedI(paredI);
+
+            // Balas
             for (Bala bala : balas) {
                 if (Utils.verificarColisionBala(jugador, bala)) {
                     jugador.recibirDano(bala);
@@ -180,12 +204,37 @@ public class PantallaJuego extends Pantalla {
         // Dibujar el stage encima del mapa
         stage.getViewport().apply();
         stage.draw();
+
+         */
+    }
+
+    private void update(float delta) {
+        jugador.update(delta, inputs);
+        botardo.update(delta, inputs);
+
+        float tiempoFrame = Math.min(delta, 0.25f); // Limite a delta en caso de lag spike (como si fuera a pasar xdd)
+        acumulador += tiempoFrame; // libgdx te amo estas re bien documentado
+        while (acumulador >= Constantes.TPP) {
+            acumulador -= Constantes.TPP;
+            world.step(Constantes.TPP, 6 ,2);
+        }
+
+        actualizarCamara();
+
+        batch.setProjectionMatrix(camara.combined);
+        renderer.setView(camara);
+    }
+
+    private void actualizarCamara() {
+        Vector2 posCamara = ayudanteMapas.getPosCamara();
+        camara.position.set(new Vector3(posCamara.x, posCamara.y, 0));
+        camara.update();
     }
 
     @Override
     public void resize(int width, int height) {
         super.resize(width,height);
-        stage.getViewport().update(width, height);
+        viewport.update(width, height);
     }
 
     @Override
@@ -193,5 +242,10 @@ public class PantallaJuego extends Pantalla {
         stage.dispose();
         mapa.dispose();
         renderer.dispose();
+        batch.dispose();
+    }
+
+    public World getWorld() {
+        return world;
     }
 }
