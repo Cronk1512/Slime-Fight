@@ -1,0 +1,48 @@
+{
+    "activeFile": "mapaTest.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "MapaGame.tmx": {
+            "scale": 0.55278125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 871.954321894963,
+                "y": 799.5929673808582
+            }
+        },
+        "TileSet/GrassLand_Background_1.tsx": {
+            "scaleInDock": 1
+        },
+        "TileSet/GrassLand_Background_5.tsx": {
+            "scaleInDock": 1
+        },
+        "TileSet/MAPA#3.tsx": {
+            "scaleInDock": 1
+        },
+        "TileSet/MAPA#4.tsx": {
+            "scaleInDock": 1
+        },
+        "TileSet/TestTileset.tsx": {
+            "scaleInDock": 1
+        },
+        "mapaTest.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 408.5,
+                "y": 288
+            }
+        }
+    },
+    "openFiles": [
+        "MapaGame.tmx",
+        "mapaTest.tmx"
+    ],
+    "project": "SlimeFight.tiled-project",
+    "recentFiles": [
+        "MapaGame.tmx",
+        "mapaTest.tmx"
+    ]
+}

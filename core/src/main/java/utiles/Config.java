@@ -20,5 +20,8 @@ public abstract class Config {
         public static final int DISPARAR = Keys.J;
     }
 
+    public static float tamañoTile = 32f;
+    public static float escalaTile = 1f / tamañoTile;
+
     public static float gravedad = 2200f;
 }

@@ -166,7 +166,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="2" name="Plataformas">
+ <objectgroup id="2" name="Plataformas" visible="0">
   <object id="5" name="piso#1" type="PISO" x="384" y="672" width="64" height="96"/>
   <object id="7" name="piso#2" type="PISO" x="800" y="672" width="64" height="96"/>
   <object id="8" name="plataforma#1" type="Platafromas" x="448" y="672" width="352" height="32"/>
@@ -178,7 +178,7 @@
   <object id="17" name="Platafroma#4" type="Platafromas" x="224" y="1216" width="192" height="32"/>
   <object id="25" name="Plataforma#5" type="PISO" x="416" y="1216" width="992" height="96"/>
  </objectgroup>
- <objectgroup id="8" name="Zone_Death">
+ <objectgroup id="8" name="Zone_Death" visible="0">
   <object id="19" name="Muerte_inferior" x="0" y="1536" width="1600" height="64"/>
   <object id="20" name="Muerte_izq" x="0" y="0" width="1.5" height="1536"/>
   <object id="24" name="Muerte_Derecha" x="1600" y="0" width="-1.5" height="1536"/>

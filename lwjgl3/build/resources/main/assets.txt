@@ -5,11 +5,14 @@ bocas/boca3.png
 fondo_puntos.png
 libgdx.png
 mapa/MapaGame.tmx
+mapa/SlimeFight.tiled-project
+mapa/SlimeFight.tiled-session
 mapa/TileSet/GrassLand_Background_1.tsx
 mapa/TileSet/GrassLand_Background_5.tsx
 mapa/TileSet/MAPA#3.tsx
 mapa/TileSet/MAPA#4.tsx
 mapa/TileSet/PROPS.tsx
+mapa/TileSet/TestTileset.tsx
 mapa/TileSet/Tiles/Floor Tiles1.png
 mapa/TileSet/Tiles/GrassLand_Background_1.png
 mapa/TileSet/Tiles/GrassLand_Background_5.png
@@ -18,6 +21,8 @@ mapa/TileSet/Tiles/GrassLand_TallGrass_1.png
 mapa/TileSet/Tiles/GrassLand_TallGrass_2.png
 mapa/TileSet/Tiles/GrassLand_Tree.png
 mapa/TileSet/Tiles/Grassland_Terrain_ExtraTiles.png
+mapa/TileSet/Tiles/testtileset.png
+mapa/mapaTest.tmx
 ojos/ojos1.png
 ojos/ojos2.png
 ojos/ojos3.png

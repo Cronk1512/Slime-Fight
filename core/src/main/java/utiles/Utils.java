@@ -4,12 +4,29 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.proyecto.slimefight.actores.Bala;
+import com.proyecto.slimefight.actores.Terreno;
 import com.proyecto.slimefight.actores.Slime;
 
 public class Utils {
+
+    public static boolean verificarTocandoTerreno(Rectangle rect, Terreno piso) {
+        // Convierte rectangulo en poligono para verificar colision
+        float[] verticesRect = new float[] {
+            rect.x, rect.y,
+            rect.x + rect.width, rect.y,
+            rect.x + rect.width, rect.y + rect.height,
+            rect.x, rect.y + rect.height
+        };
+
+        Polygon rectPoligono = new Polygon(verticesRect);
+        return Intersector.overlapConvexPolygons(rectPoligono, piso.figura);
+    }
 
     public static boolean verificarColisionBala(Slime jugador, Bala bala) {
         if (jugador.hitbox.overlaps(bala.hitbox)) {

@@ -18,12 +18,16 @@ public class Slime extends Actor {
     private Sprite ojos;
     private Sprite boca;
     public Rectangle hitbox;
+    private Rectangle mano;
+    public Rectangle pisoCollider;
+    public Rectangle paredizqCollider;
+    public Rectangle paredderCollider;
+    public Rectangle techoCollider;
     Texture textura = new Texture(Utils.obtenerRutaInterna("slime.png"));
     private TextureRegion texturaSlime;
     private boolean volteado;
-    private float width = 50;
-    private float height = 50;
-    private Rectangle mano;
+    private float width = 32;
+    private float height = 32;
 
     // cosas de animacion de inclinacion
     float walkTimer = 0;
@@ -45,6 +49,11 @@ public class Slime extends Actor {
     // flags
     boolean puedeSaltar = true;
     boolean puedeDisparar = false;
+    boolean tocandoPiso = false;
+    boolean tocandoTecho = false;
+    boolean tocandoParedD = false;
+    boolean tocandoParedI = false;
+    boolean debeAterrizar = false;
 
     // stats
     private float porcentajeVida = 0;
@@ -56,6 +65,10 @@ public class Slime extends Actor {
     public Slime(Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
+        pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
+        paredizqCollider = new Rectangle(getX()-2, getY(), getWidth(), getHeight());
+        paredderCollider = new Rectangle(getX()+2, getY(), getWidth(), getHeight());
+        techoCollider = new Rectangle(getX(), getY()+2, getWidth(), getHeight());
 
         this.ojos = ojos;
         this.boca = boca;
@@ -85,16 +98,20 @@ public class Slime extends Actor {
     private void moverPersonaje(float delta, TomarInput input) {
         // Movimiento horizontal
         moveX = ((input.derecha ? 1 : 0) - (input.izquierda ? 1 : 0));
+        if (tocandoParedD) if (moveX > 0) moveX = 0;
+        if (tocandoParedI) if (moveX < 0) moveX = 0;
         setX(getX() + (moveX * VELOCIDAD + impulsoX) * delta);
 
         // Impulsos
         if (impulsoX != 0) {
             impulsoX = MathUtils.lerp(impulsoX, 0f, delta * 2);
-            if (impulsoX <= 10) impulsoX = 0;
+            if (impulsoX <= 10 && impulsoX >= -10) impulsoX = 0;
+            if (tocandoParedD && impulsoX > 0) impulsoX = 0;
+            if (tocandoParedI && impulsoX < 0) impulsoX = 0;
         }
         if (impulsoY != 0) {
             impulsoY = MathUtils.lerp(impulsoY, 0f, delta * 2);
-            if (getY() <= 0) impulsoY = 0;
+            if (tocandoTecho) impulsoY = 0;
         }
 
         // Movimiento vertical
@@ -104,18 +121,23 @@ public class Slime extends Actor {
             moveY = PODER_SALTO;
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
+            debeAterrizar = true;
             animScaleY = 1.3f;
             animScaleX = 0.7f;
         }
 
         if (!input.saltar && moveY > 0) moveY = 0;
-        if (getY() > 0) {
+        if (tocandoTecho) cancelarMovimientoY();
+        if (!tocandoPiso) {
             moveY -= gravedad * delta;
             puedeSaltar = false;
+        } else {
+            setY(getY()+1);
+            puedeSaltar = true;
         }
         setY(getY() + (moveY + impulsoY) * delta);
         if (getY() < 0) {
-            puedeSaltar = true; // TODO: en vez de 0 sería el piso (aunque tambien deberia poder saltar al tocar una pared)
+
             setY(0);
             float fuerzaImpacto = MathUtils.clamp(Math.abs(moveY) / PODER_SALTO, 0.2f, 1.0f);
 
@@ -148,7 +170,7 @@ public class Slime extends Actor {
 
         inclinacion = MathUtils.lerp(inclinacion, objetivoInclinacion, delta * LERP_SPEED);
 
-        if (!puedeSaltar) {
+        if (!tocandoPiso) {
             // estirar al saltar
             if (moveY > 0) {
                 // mientras va para arriba
@@ -189,6 +211,10 @@ public class Slime extends Actor {
             mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
         }
         hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
+        pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
+        paredizqCollider = new Rectangle(getX()-2, getY(), getWidth(), getHeight());
+        paredderCollider = new Rectangle(getX()+2, getY(), getWidth(), getHeight());
+        techoCollider = new Rectangle(getX(), getY()+2, getWidth(), getHeight());
     }
 
     @Override
@@ -229,8 +255,43 @@ public class Slime extends Actor {
         boca.flip(true, false);
     }
 
+
+    public void cancelarMovimientoY() {
+        moveY = 0;
+        impulsoY = 0;
+    }
+
+    public void cancelarMovimientoX() {
+        moveX = 0;
+        impulsoX = 0;
+    }
+
+    public float getMoveX() {
+        return moveX;
+    }
+    public float getMoveY() {
+        return moveY;
+    }
+    public void setMoveX(float moveX) {
+        this.moveX = moveX;
+    }
+    public void setMoveY(float moveY) {
+        this.moveY = moveY;
+    }
     public void setArma(Arma arma) {
         this.arma = arma;
     }
+    public void setTocandoPiso(Boolean tocandoPiso) {
+        this.tocandoPiso = tocandoPiso;
+    }
+    public void setTocandoTecho(Boolean tocandoTecho) {
+        this.tocandoTecho = tocandoTecho;
+    }
+    public void setTocandoParedD(Boolean tocandoParedD) {
+        this.tocandoParedD = tocandoParedD;
+    }public void setTocandoParedI(Boolean tocandoParedI) {
+        this.tocandoParedI = tocandoParedI;
+    }
+
 
 }
