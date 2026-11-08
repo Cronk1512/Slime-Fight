@@ -52,6 +52,7 @@ public class Slime extends Actor {
     private float impulsoX = 0f;
 
     // flags
+    boolean bloqueado = false; // Hace que no pueda tomar ninguna accion (para el inicio del juego)
     boolean puedeSaltar = true;
     boolean puedeDisparar = false;
     boolean tocandoPiso = false;
@@ -59,9 +60,8 @@ public class Slime extends Actor {
 
     // stats
     private float porcentajeVida = 0;
-    private float vidas = 3;
     private float velocidad = 6.5f; // Metros por segundo (1m = 32p)
-    private float poder_salto = 16.0f;
+    private float poder_salto = 12.0f;
     private Arma arma;
 
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
@@ -94,10 +94,12 @@ public class Slime extends Actor {
     */
 
     public void update(float delta, TomarInput input) {
-        moverPersonaje(delta, input);
-        sincronizarConCuerpo();
-        actualizarColliders();
-        if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
+        if (!bloqueado) {
+            moverPersonaje(delta, input);
+            sincronizarConCuerpo();
+            actualizarColliders();
+            if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
+        }
     }
 
     private void sincronizarConCuerpo() {
@@ -277,4 +279,18 @@ public class Slime extends Actor {
     public void setArma(Arma arma) {
         this.arma = arma;
     }
+
+    public void setBloqueado(boolean bloqueado) {
+        this.bloqueado = bloqueado;
+    }
+
+    public float getPorcentajeVida() {
+        return porcentajeVida;
+    }
+
+    public Texture getTexturaCuerpo() { return textura; }
+
+    public Sprite getOjos() { return ojos; }
+
+    public Sprite getBoca() { return boca; }
 }

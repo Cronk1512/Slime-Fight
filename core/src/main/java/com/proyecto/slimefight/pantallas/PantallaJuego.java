@@ -18,8 +18,8 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.proyecto.slimefight.Main;
 import com.proyecto.slimefight.actores.Arma;
 import com.proyecto.slimefight.actores.Slime;
+import com.proyecto.slimefight.interfaz.Hud;
 import utiles.*;
-
 import java.util.ArrayList;
 
 public class PantallaJuego extends Pantalla {
@@ -38,6 +38,7 @@ public class PantallaJuego extends Pantalla {
     private TiledMap mapa;
     private AyudanteMapas ayudanteMapas;
     private final Matrix4 matrizDebug = new Matrix4();
+    private Hud hud;
 
     ArrayList<Slime> slimes;
 
@@ -98,6 +99,8 @@ public class PantallaJuego extends Pantalla {
         Arma armatest = new Arma("AK47", world, 0, -5, 65, 21, tarma, 3, 23, 25, 0, 7, 2.0f, 10, 1);
         jugador.setArma(armatest);
         stage.addActor(armatest);
+
+        hud = new Hud(slimes);
     }
 
     @Override
@@ -115,6 +118,11 @@ public class PantallaJuego extends Pantalla {
 
         matrizDebug.set(camara.combined).scl(Constantes.PPM);
         box2DDebugRenderer.render(world, matrizDebug);
+
+        // UI
+        hud.update(delta);
+        hud.draw();
+
         /*
         //camara.zoom += (float) (0.1 * delta);
         //stage.getViewport().getCamera().position.set(mapaAnchoPx / 2f, mapaAltoPx / 2f, 0);
@@ -197,7 +205,7 @@ public class PantallaJuego extends Pantalla {
 
     private void update(float delta) {
         jugador.update(delta, inputs);
-        botardo.update(delta, inputs);
+        botardo.update(delta, new TomarInput());
 
         float tiempoFrame = Math.min(delta, 0.25f); // Limite a delta en caso de lag spike (como si fuera a pasar xdd)
         acumulador += tiempoFrame; // libgdx te amo estas re bien documentado
@@ -222,6 +230,7 @@ public class PantallaJuego extends Pantalla {
     public void resize(int width, int height) {
         super.resize(width,height);
         viewport.update(width, height);
+        hud.resize(width, height);
     }
 
     @Override
@@ -230,6 +239,7 @@ public class PantallaJuego extends Pantalla {
         mapa.dispose();
         renderer.dispose();
         batch.dispose();
+        hud.dispose();
     }
 
     public World getWorld() {

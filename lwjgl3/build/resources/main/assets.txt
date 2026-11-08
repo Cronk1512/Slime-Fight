@@ -2,7 +2,13 @@ armas/arma1.png
 bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
+ejemplo intro.png
 fondo_puntos.png
+fuentes/Daydream DEMO.ttf
+intro/1_placeholder.png
+intro/2_placeholder.png
+intro/3_placeholder.png
+intro/fight_placeholder.png
 libgdx.png
 mapa/MapaGame.tmx
 mapa/SlimeFight.tiled-project
