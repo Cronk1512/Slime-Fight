@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.proyecto.slimefight.actores.Bala;
+import com.proyecto.slimefight.actores.Caja;
 import com.proyecto.slimefight.actores.Slime;
 
 public class Utils {
@@ -40,6 +41,15 @@ public class Utils {
         } else {
             bala.impactar(null);                        // terreno
         }
+    }
+
+    public static void contactoCaja(Contact c) {
+        Fixture fa = c.getFixtureA(), fb = c.getFixtureB();
+        Object a = fa.getBody().getUserData(), b = fb.getBody().getUserData();
+        if (a instanceof Caja && b instanceof Slime) ((Caja) a).marcarRecogida((Slime) b);
+        else if (b instanceof Caja && a instanceof Slime) ((Caja) b).marcarRecogida((Slime) a);
+
+
     }
 
     public static void contactoPies(Contact c, int d) {
@@ -81,6 +91,8 @@ public class Utils {
         FixtureDef fdparedI = new FixtureDef();
         fdprincipal.shape = figura;
         fdprincipal.friction = 0;
+        fdprincipal.filter.categoryBits = Constantes.CATEGORIA_SLIME;
+        fdprincipal.filter.maskBits = (Constantes.CATEGORIA_TERRENO | Constantes.CATEGORIA_SLIME);
         fdparedD.shape = paredD;
         fdparedD.isSensor = true;
         fdpies.shape = pies;

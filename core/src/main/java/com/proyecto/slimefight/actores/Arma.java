@@ -59,6 +59,33 @@ public class Arma extends Actor {
         this.mundo = mundo;
     }
 
+    public Arma(Arma arma) {
+        sprite = new Sprite(arma.sprite);
+
+        setWidth(arma.getWidth());
+        setHeight(arma.getHeight());
+        sprite.setSize(arma.getWidth(), arma.getHeight());
+
+        offX = arma.offX;
+        offY = arma.offY;
+
+        this.nombre = arma.nombre;
+        this.dano = arma.dano;
+        this.knockback = arma.knockback;
+        this.rango = arma.rango;
+        this.cooldown = arma.cooldown;
+        this.durabilidad = arma.durabilidad;
+        this.dispersion = arma.dispersion;
+        tamañoBala = arma.tamañoBala;
+        if (tamañoBala<5) tamañoBala = 5;
+        this.tamañoBala = Math.abs(tamañoBala);
+        cantBalas = arma.cantBalas;
+        if (cantBalas==0) cantBalas = 1;
+        this.cantBalas = Math.abs(cantBalas);
+
+        this.mundo = arma.mundo;
+    }
+
     public void update(float delta, float x, float y, boolean volteado, Slime dueno) {
         setX(x + offX);
         setY(y + offY);

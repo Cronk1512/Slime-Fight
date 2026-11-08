@@ -3,7 +3,9 @@ package utiles;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.*;
 import com.badlogic.gdx.Preferences;
+import com.proyecto.slimefight.actores.Arma;
 
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
 

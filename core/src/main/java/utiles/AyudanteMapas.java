@@ -6,10 +6,7 @@ import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.physics.box2d.*;
 import com.proyecto.slimefight.pantallas.PantallaJuego;
 
 import java.util.ArrayList;
@@ -22,6 +19,7 @@ public class AyudanteMapas {
     private Vector2 posCamara;
     private float yLetal = 0;
     private ArrayList<Vector2> puntosDeSpawn = new ArrayList<>();
+    private ArrayList<Vector2> puntosDeArmas = new ArrayList<>();
 
     public AyudanteMapas(TiledMap mapa, PantallaJuego juego) {
         this.mapa = mapa;
@@ -49,6 +47,8 @@ public class AyudanteMapas {
                 posCamara = new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class));
             } else if (objeto.getProperties().get("type", String.class).equals("Limite")) {
                 yLetal = objeto.getProperties().get("y", Float.class);
+            } else if (objeto.getProperties().get("type", String.class).equals("Arma")) {
+                puntosDeArmas.add(new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class)));
             } else if (objeto.getProperties().get("type", String.class).equals("Spawn")) {
                 puntosDeSpawn.add(new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class)));
             }
@@ -60,7 +60,11 @@ public class AyudanteMapas {
         bodyDef.type = BodyDef.BodyType.StaticBody;
         Body body = juego.getWorld().createBody(bodyDef);
         Shape shape = crearPoligono(polygonMapObject);
-        body.createFixture(shape, 1000);
+        FixtureDef terreno = new FixtureDef();
+        terreno.shape = shape;
+        terreno.filter.categoryBits = Constantes.CATEGORIA_TERRENO;
+        terreno.density = 1000;
+        body.createFixture(terreno);
         shape.dispose();
     }
 
@@ -88,5 +92,9 @@ public class AyudanteMapas {
 
     public ArrayList<Vector2> getPuntosDeSpawn() {
         return puntosDeSpawn;
+    }
+
+    public ArrayList<Vector2> getPuntosDeArmas() {
+        return puntosDeArmas;
     }
 }

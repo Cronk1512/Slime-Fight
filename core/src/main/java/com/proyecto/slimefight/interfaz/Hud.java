@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.proyecto.slimefight.Jugador;
 import com.proyecto.slimefight.actores.Slime;
 import utiles.Utils;
 
@@ -16,14 +17,16 @@ import java.util.ArrayList;
 
 public class Hud {
     private final Stage stage;
-    private final ArrayList<Slime> slimes;
+    private ArrayList<Slime> slimes;
+    private final ArrayList<Jugador> jugadores;
     private final ArrayList<Label> etiquetas = new ArrayList<>();
     private final ArrayList<Container<Label>> contenedores = new ArrayList<>();
     BitmapFont fuente;
     private CuentaAtras cuentaAtras;
 
-    public Hud(ArrayList<Slime> slimes) {
-        this.slimes = slimes;
+    public Hud(ArrayList<Jugador> jugadores) {
+        this.jugadores = jugadores;
+        actualizarSlimes();
         stage = new Stage(new ScreenViewport());
 
         FreeTypeFontGenerator generador = new FreeTypeFontGenerator(Utils.obtenerRutaInterna("fuentes/Daydream DEMO.ttf"));
@@ -63,11 +66,14 @@ public class Hud {
             tabla.add(jugador).expandX();
         }
 
-        cuentaAtras = new CuentaAtras(200);
-        cuentaAtras.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f);
-        stage.addActor(cuentaAtras);
+        reiniciarCuentaAtras();
+    }
 
-
+    public void actualizarSlimes() {
+        slimes = new ArrayList<>();
+        for (Jugador j : jugadores) {
+            slimes.add(j.getSlime());
+        }
     }
 
     public void update(float delta) {
@@ -103,5 +109,15 @@ public class Hud {
     // pa que pueda acceder pantallajuego
     public boolean isCuentaAtrasFinalizada() {
         return cuentaAtras.isCuentaAtrasFinalizada();
+    }
+
+    public void reiniciarCuentaAtras() {
+        if (cuentaAtras != null) {
+            cuentaAtras.remove();
+            cuentaAtras.dispose();
+        }
+        cuentaAtras = new CuentaAtras(200);
+        cuentaAtras.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f);
+        stage.addActor(cuentaAtras);
     }
 }
