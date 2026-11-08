@@ -44,25 +44,24 @@ public class Slime extends Actor {
     private static final float MAX_INCLINACION = 16f;
     private static final float LERP_SPEED = 4.0f;
     private static final float REBOTE_IDLE = 0.03f;
+    private float coyote_time = 0f;
 
     // vars de movimiento
     private float moveX;
     private float velYPrevia;
+    private float impulsoX = 0f;
 
     // flags
     boolean puedeSaltar = true;
     boolean puedeDisparar = false;
     boolean tocandoPiso = false;
-    boolean tocandoTecho = false;
-    boolean tocandoParedD = false;
-    boolean tocandoParedI = false;
-    boolean debeAterrizar = false;
+    boolean saltando = false;
 
     // stats
     private float porcentajeVida = 0;
     private float vidas = 3;
-    private float velocidad = 5.0f; // Metros por segundo (1m = 32p)
-    private float poder_salto = 12.0f;
+    private float velocidad = 6.5f; // Metros por segundo (1m = 32p)
+    private float poder_salto = 16.0f;
     private Arma arma;
 
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
@@ -97,7 +96,8 @@ public class Slime extends Actor {
     public void update(float delta, TomarInput input) {
         moverPersonaje(delta, input);
         sincronizarConCuerpo();
-        if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado);
+        actualizarColliders();
+        if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
     }
 
     private void sincronizarConCuerpo() {
@@ -115,11 +115,10 @@ public class Slime extends Actor {
         boolean estabaEnPiso = tocandoPiso;
         tocandoPiso = contactosPiso > 0;
         if (puedeSaltar && input.saltar) {
-            cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, 0);
-            cuerpo.applyLinearImpulse(0, cuerpo.getMass() * poder_salto, cuerpo.getWorldCenter().x, cuerpo.getWorldCenter().y, true);
+            cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto);
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
-            debeAterrizar = true;
+            saltando = true;
             animScaleY = 1.3f;
             animScaleX = 0.7f;
         }
@@ -127,18 +126,37 @@ public class Slime extends Actor {
 
         if (tocandoPiso && !estabaEnPiso) { // Aterrizo
             puedeSaltar = true;
+            coyote_time = 0;
             float fuerzaImpacto = MathUtils.clamp(Math.abs(velYPrevia) / poder_salto, 0.2f, 1.0f);
             animScaleX = 1.5f * fuerzaImpacto;
             animScaleY = 0.4f / fuerzaImpacto;
             timerAplastar = 1f;
         }
 
-        if (!input.saltar && cuerpo.getLinearVelocity().y > 0) {
+        // corta el salto para mas precision
+        if (saltando && !input.saltar && cuerpo.getLinearVelocity().y > 0) {
             cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, 0);
         }
 
+        // en caso de knockback al aire para que el if de arriba no deje cortar el salto
+        if (cuerpo.getLinearVelocity().y <= 0) saltando = false;
+
+        // si te caes como un bot no te deja saltar (PERO CON COYOTE TIME)
+        if (cuerpo.getLinearVelocity().y < 0 && puedeSaltar) {
+            coyote_time += delta * 2f;
+            if (coyote_time > Constantes.COYOTE_TIME) {
+                puedeSaltar = false;
+            }
+        }
+
         velYPrevia = cuerpo.getLinearVelocity().y;
-        cuerpo.setLinearVelocity(moveX * velocidad, cuerpo.getLinearVelocity().y);
+        cuerpo.setLinearVelocity(moveX * velocidad + impulsoX, cuerpo.getLinearVelocity().y);
+
+        // Impulsos
+        if (impulsoX != 0) {
+            impulsoX = MathUtils.lerp(impulsoX, 0, delta * 5f);
+            if (Math.abs(impulsoX) < 0.5f) impulsoX = 0;
+        }
 
         // Shoot ze gun
         if (!input.disparar) puedeDisparar = true;
@@ -203,14 +221,8 @@ public class Slime extends Actor {
         } else {
             mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
         }
-        hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
 
-        float grosor = 2f;
-        float margen = 4f;
-        pisoCollider = new Rectangle(getX() + margen, getY()-grosor, getWidth()-margen*2, grosor);
-        techoCollider = new Rectangle(getX() + margen, getY()+getHeight(), getWidth()-margen*2, grosor);
-        paredizqCollider = new Rectangle(getX()-grosor, getY() + margen, grosor, getHeight()-margen*2);
-        paredderCollider = new Rectangle(getX()+getWidth(), getY() + margen, grosor, getHeight()-margen*2);
+        hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
     }
 
     @Override
@@ -237,11 +249,13 @@ public class Slime extends Actor {
         porcentajeVida += bala.dano;
         int dir = bala.dirDerecha() ? 1 : -1;
         System.out.println(porcentajeVida);
-        aplicarImpulso(dir * bala.knockback, 15);
+        aplicarImpulso(dir * bala.knockback, 2);
     }
 
     public void aplicarImpulso(float x, float y) {
-        cuerpo.applyLinearImpulse(cuerpo.getMass() * x, cuerpo.getMass() * y, cuerpo.getWorldCenter().x, cuerpo.getWorldCenter().y, true);
+        impulsoX += x * (porcentajeVida/100);
+        cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, cuerpo.getLinearVelocity().y + y);
+        saltando = false;
     }
 
     public void darVuelta() {
@@ -260,4 +274,7 @@ public class Slime extends Actor {
         contactosPiso += d;
     }
 
+    public void setArma(Arma arma) {
+        this.arma = arma;
+    }
 }

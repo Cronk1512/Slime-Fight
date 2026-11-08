@@ -13,15 +13,12 @@ public abstract class Config {
 
     public static class Controles {
         // TODO controles configurables
-        public static final int MOVER_DER = Keys.D;
-        public static final int MOVER_IZQ = Keys.A;
-        public static final int MOVER_ABA = Keys.S;
-        public static final int SALTAR = Keys.W;
+        public static final int MOVER_DER = Keys.RIGHT;
+        public static final int MOVER_IZQ = Keys.LEFT;
+        public static final int MOVER_ABA = Keys.DOWN;
+        public static final int SALTAR = Keys.UP;
         public static final int DISPARAR = Keys.J;
     }
-
-    public static float tamañoTile = 32f;
-    public static float escalaTile = 1f / tamañoTile;
 
 
 }

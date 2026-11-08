@@ -38,8 +38,8 @@
   <object id="19" type="Piso" x="544" y="288">
    <polygon points="0,0 0,-32 -192,-32 -192,0"/>
   </object>
-  <object id="20" type="Piso" x="352" y="480">
-   <polygon points="0,0 288,0 288,32 0,32"/>
+  <object id="20" type="Piso" x="256.667" y="480">
+   <polygon points="0,0 637.333,0 637.333,32 0,32"/>
   </object>
   <object id="21" type="Piso" x="608" y="352">
    <polygon points="0,0 160,0 160,32 0,32"/>

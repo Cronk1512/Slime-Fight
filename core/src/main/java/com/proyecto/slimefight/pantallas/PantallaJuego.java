@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.proyecto.slimefight.Main;
+import com.proyecto.slimefight.actores.Arma;
 import com.proyecto.slimefight.actores.Slime;
 import utiles.*;
 
@@ -28,8 +29,6 @@ public class PantallaJuego extends Pantalla {
     private Slime botardo;
     private OrthographicCamera camara;
     private ExtendViewport viewport;
-    float mapaAnchoPx;
-    float mapaAltoPx;
     float acumulador = 0;
 
     private World world;
@@ -65,7 +64,7 @@ public class PantallaJuego extends Pantalla {
 
         // contact listener bullshit
         world.setContactListener(new ContactListener() {
-            @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); }
+            @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); Utils.contactoBala(c); }
             @Override public void endContact(Contact c) { Utils.contactoPies(c, -1); }
             @Override public void preSolve(Contact c, Manifold m) {}
             @Override public void postSolve(Contact c, ContactImpulse i) {}
@@ -80,8 +79,8 @@ public class PantallaJuego extends Pantalla {
         Texture bboca = new Texture(Utils.obtenerRutaInterna("bocas/boca1.png"));
         bojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        jugador = new Slime(Utils.crearCuerpo(32, 32, 32, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
-        botardo = new Slime(Utils.crearCuerpo(32, 32, 32, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
+        jugador = new Slime(Utils.crearCuerpo(32, 32, 26, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
+        botardo = new Slime(Utils.crearCuerpo(32, 32, 26, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
         // TODO: sacar lista de slimes de pantalla lobby multiplayer
         slimes.add(jugador);
         slimes.add(botardo);
@@ -93,24 +92,12 @@ public class PantallaJuego extends Pantalla {
             slime.setPosicionPx(spawn.x, spawn.y);
             posID++;
         }
-
-        /*
-
-        int tileWidth = mapa.getProperties().get("tilewidth", Integer.class);
-        int tileHeight = mapa.getProperties().get("tileheight", Integer.class);
-        int mapWidthTiles = mapa.getProperties().get("width", Integer.class);
-        int mapHeightTiles = mapa.getProperties().get("height", Integer.class);
-
-        mapaAnchoPx = mapWidthTiles * tileWidth;
-        mapaAltoPx = mapHeightTiles * tileHeight;
-
-        viewport.getCamera().position.set(mapaAnchoPx / 2f, mapaAltoPx / 2f, 0);
-        viewport.getCamera().update();
-
-// debug añade el armatest al jugador
+        // debug añade el armatest al jugador
+        Texture tarma = new Texture(Utils.obtenerRutaInterna("armas/arma1.png"));
+        tarma.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        Arma armatest = new Arma("AK47", world, 0, -5, 65, 21, tarma, 3, 23, 25, 0, 7, 2.0f, 10, 1);
+        jugador.setArma(armatest);
         stage.addActor(armatest);
-
-         */
     }
 
     @Override

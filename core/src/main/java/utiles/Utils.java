@@ -23,6 +23,25 @@ public class Utils {
         return new Polygon(verticesRect);
     }
 
+    public static void contactoBala(Contact c) {
+        Fixture a = c.getFixtureA(), b = c.getFixtureB();
+        Bala bala; Fixture otro;
+        if (a.getBody().getUserData() instanceof Bala) { bala = (Bala) a.getBody().getUserData(); otro = b; }
+        else if (b.getBody().getUserData() instanceof Bala) { bala = (Bala) b.getBody().getUserData(); otro = a; }
+        else return;
+
+        Object ud = otro.getBody().getUserData();
+        if (ud instanceof Bala) return;                 // bala contra bala: ignorar
+        if ("pies".equals(otro.getUserData())) return;  // sensor de pies del slime
+
+        if (ud instanceof Slime) {
+            if (ud == bala.getDueno()) return;          // no pegarse a uno mismo
+            bala.impactar((Slime) ud);
+        } else {
+            bala.impactar(null);                        // terreno
+        }
+    }
+
     public static void contactoPies(Contact c, int d) {
         Fixture a = c.getFixtureA(), b = c.getFixtureB();
         if ("pies".equals(a.getUserData()) && !b.isSensor()) ((Slime) a.getBody().getUserData()).sumarContactoPiso(d);

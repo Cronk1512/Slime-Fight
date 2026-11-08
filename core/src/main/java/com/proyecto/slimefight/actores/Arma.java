@@ -6,7 +6,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import utiles.Constantes;
 
 public class Arma extends Actor {
     private final Sprite sprite;
@@ -23,16 +25,19 @@ public class Arma extends Actor {
     private float dispersion;
     private float tamañoBala;
     private float cantBalas;
+    private Slime dueno;
+    private World mundo;
 
     private float timerCooldown = 0;
 
-    public Arma(String nombre, float offsetX, float offsetY, float width, float height, Texture textura,
+    public Arma(String nombre, World mundo, float offsetX, float offsetY, float width, float height, Texture textura,
                 int dano, float knockback, float rango, float dispersion, float tamañoBala, float cooldown, int durabilidad, int cantBalas) {
         textura.setFilter(TextureFilter.Nearest,TextureFilter.Nearest);
         sprite = new Sprite(textura);
 
         setWidth(width);
         setHeight(height);
+        sprite.setSize(width, height);
 
         offX = offsetX;
         offY = offsetY;
@@ -48,14 +53,18 @@ public class Arma extends Actor {
         this.tamañoBala = Math.abs(tamañoBala);
         if (cantBalas==0) cantBalas = 1;
         this.cantBalas = Math.abs(cantBalas);
+
+        this.mundo = mundo;
     }
 
-    public void update(float delta, float x, float y, boolean volteado) {
+    public void update(float delta, float x, float y, boolean volteado, Slime dueno) {
         setX(x + offX);
         setY(y + offY);
 
         sprite.setPosition(getX()-getWidth()/2, getY()-getHeight()/2);
         sprite.setOriginCenter();
+
+        this.dueno = dueno;
 
         if (this.volteado != volteado) {
             darVuelta();
@@ -82,14 +91,14 @@ public class Arma extends Actor {
                 sprite.setRotation(40);
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, 1, tamañoBala, 1000, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, 1, tamañoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             } else {
                 sprite.setRotation(-40);
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(puntoDeFuego.x, puntoDeFuego.y, -1, tamañoBala, 1000, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, -1, tamañoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             }
