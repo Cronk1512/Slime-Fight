@@ -48,6 +48,14 @@ public class Utils {
         if ("pies".equals(b.getUserData()) && !a.isSensor()) ((Slime) b.getBody().getUserData()).sumarContactoPiso(d);
     }
 
+    public static void contactoParedes(Contact c, int d) {
+        Fixture a = c.getFixtureA(), b = c.getFixtureB();
+        if ("paredD".equals(a.getUserData()) && !b.isSensor()) ((Slime) a.getBody().getUserData()).sumarContactoPared(d, true);
+        if ("paredD".equals(b.getUserData()) && !a.isSensor()) ((Slime) b.getBody().getUserData()).sumarContactoPared(d, true);
+        if ("paredI".equals(a.getUserData()) && !b.isSensor()) ((Slime) a.getBody().getUserData()).sumarContactoPared(d, false);
+        if ("paredI".equals(b.getUserData()) && !a.isSensor()) ((Slime) b.getBody().getUserData()).sumarContactoPared(d, false);
+    }
+
     public static Body crearCuerpo(float x, float y, float width, float height, BodyDef.BodyType tipo, World mundo) {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = tipo;
@@ -57,20 +65,36 @@ public class Utils {
 
         PolygonShape figura = new PolygonShape();
         PolygonShape pies = new PolygonShape();
+        PolygonShape paredD = new PolygonShape();
+        PolygonShape paredI = new PolygonShape();
         figura.setAsBox(width / 2 / Constantes.PPM, height / 2 / Constantes.PPM);
+        paredD.setAsBox( 2f / Constantes.PPM, 10f / Constantes.PPM,
+            new Vector2(13f / Constantes.PPM, 0), 0);
+        paredI.setAsBox( 2f / Constantes.PPM, 10f / Constantes.PPM,
+            new Vector2(-13f / Constantes.PPM, 0), 0);
         pies.setAsBox(10f / Constantes.PPM, 2f / Constantes.PPM,
             new Vector2(0, -16f / Constantes.PPM), 0);
 
         FixtureDef fdprincipal = new FixtureDef();
         FixtureDef fdpies = new FixtureDef();
+        FixtureDef fdparedD = new FixtureDef();
+        FixtureDef fdparedI = new FixtureDef();
         fdprincipal.shape = figura;
         fdprincipal.friction = 0;
+        fdparedD.shape = paredD;
+        fdparedD.isSensor = true;
         fdpies.shape = pies;
         fdpies.isSensor = true;
+        fdparedI.shape = paredI;
+        fdparedI.isSensor = true;
         cuerpo.createFixture(fdprincipal).setUserData("principal");
         cuerpo.createFixture(fdpies).setUserData("pies");
+        cuerpo.createFixture(fdparedD).setUserData("paredD");
+        cuerpo.createFixture(fdparedI).setUserData("paredI");
         figura.dispose();
         pies.dispose();
+        paredI.dispose();
+        paredD.dispose();
         return cuerpo;
     }
 

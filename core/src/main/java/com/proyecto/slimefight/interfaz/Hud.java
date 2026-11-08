@@ -1,5 +1,6 @@
 package com.proyecto.slimefight.interfaz;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -19,6 +20,7 @@ public class Hud {
     private final ArrayList<Label> etiquetas = new ArrayList<>();
     private final ArrayList<Container<Label>> contenedores = new ArrayList<>();
     BitmapFont fuente;
+    private CuentaAtras cuentaAtras;
 
     public Hud(ArrayList<Slime> slimes) {
         this.slimes = slimes;
@@ -32,8 +34,8 @@ public class Hud {
         p.borderColor = Color.BLACK;
         p.minFilter = Texture.TextureFilter.Nearest;
         p.magFilter = Texture.TextureFilter.Nearest;
-        p.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "áéíóúñÁÉÍÓÚÑ¡¿";
-        BitmapFont fuente = generador.generateFont(p);
+        p.characters = FreeTypeFontGenerator.DEFAULT_CHARS;
+        fuente = generador.generateFont(p);
         generador.dispose();
 
         // TODO conseguir (o hacer) un mejor font (osea este esta buenisimo pero no tiene "%")
@@ -58,8 +60,14 @@ public class Hud {
             Table jugador = new Table();
             jugador.add(icono).size(48).padRight(10);
             jugador.add(cont).width(100).height(40);
-            tabla.add(jugador).expandX();   // reparte los jugadores a lo ancho
+            tabla.add(jugador).expandX();
         }
+
+        cuentaAtras = new CuentaAtras(200);
+        cuentaAtras.setPosition(Gdx.graphics.getWidth() / 2f, Gdx.graphics.getHeight() / 2f);
+        stage.addActor(cuentaAtras);
+
+
     }
 
     public void update(float delta) {
@@ -78,14 +86,22 @@ public class Hud {
 
     public void resize(int w, int h) {
         stage.getViewport().update(w, h, true);
+        cuentaAtras.setPosition(w / 2f, h / 2f);
     }
 
     public void dispose() {
         stage.dispose();
         fuente.dispose();
+        cuentaAtras.dispose();
     }
 
     public Stage getStage() {
         return stage;
+    }
+
+
+    // pa que pueda acceder pantallajuego
+    public boolean isCuentaAtrasFinalizada() {
+        return cuentaAtras.isCuentaAtrasFinalizada();
     }
 }

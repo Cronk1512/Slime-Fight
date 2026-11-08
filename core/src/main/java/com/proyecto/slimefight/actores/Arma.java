@@ -28,6 +28,8 @@ public class Arma extends Actor {
     private Slime dueno;
     private World mundo;
 
+    private boolean estaRoto = false;
+
     private float timerCooldown = 0;
 
     public Arma(String nombre, World mundo, float offsetX, float offsetY, float width, float height, Texture textura,
@@ -83,19 +85,23 @@ public class Arma extends Actor {
             timerCooldown = cooldown;
             Bala bala;
             Vector2 puntoDeFuego;
-            durabilidad -= 1;
 
+            if (durabilidad > 0) durabilidad -= 1;
+            if (durabilidad == 0) estaRoto = true;
 
-
-            if (!volteado) {
+            if (!volteado) { // rotacion (rota aunque este roto)
                 sprite.setRotation(40);
+            } else {
+                sprite.setRotation(-40);
+            }
+
+            if (!volteado && !estaRoto) { // disparacion
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
                     bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, 1, tamañoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
-            } else {
-                sprite.setRotation(-40);
+            } else if (!estaRoto) {
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
                     bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, -1, tamañoBala, 500, dano, knockback, rango, dispersion);
@@ -103,6 +109,10 @@ public class Arma extends Actor {
                 }
             }
         }
+    }
+
+    public void destruir() {
+        remove();
     }
 
     public void darVuelta() {
@@ -118,5 +128,9 @@ public class Arma extends Actor {
 
     public int getDurabilidad() {
         return durabilidad;
+    }
+
+    public boolean isEstaRoto() {
+        return estaRoto;
     }
 }

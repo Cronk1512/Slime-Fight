@@ -20,6 +20,7 @@ public class AyudanteMapas {
     private TiledMap mapa;
     private PantallaJuego juego;
     private Vector2 posCamara;
+    private float yLetal = 0;
     private ArrayList<Vector2> puntosDeSpawn = new ArrayList<>();
 
     public AyudanteMapas(TiledMap mapa, PantallaJuego juego) {
@@ -46,6 +47,8 @@ public class AyudanteMapas {
                 crearCuerpoEstatico((PolygonMapObject) objeto);
             } else if (objeto.getProperties().get("type", String.class).equals("Camara")) {
                 posCamara = new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class));
+            } else if (objeto.getProperties().get("type", String.class).equals("Limite")) {
+                yLetal = objeto.getProperties().get("y", Float.class);
             } else if (objeto.getProperties().get("type", String.class).equals("Spawn")) {
                 puntosDeSpawn.add(new Vector2(objeto.getProperties().get("x", Float.class), objeto.getProperties().get("y", Float.class)));
             }
@@ -77,6 +80,10 @@ public class AyudanteMapas {
 
     public Vector2 getPosCamara() {
         return posCamara;
+    }
+
+    public float getyLetal() {
+        return yLetal;
     }
 
     public ArrayList<Vector2> getPuntosDeSpawn() {

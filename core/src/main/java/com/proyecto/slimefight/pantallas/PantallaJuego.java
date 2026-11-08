@@ -21,6 +21,8 @@ import com.proyecto.slimefight.actores.Slime;
 import com.proyecto.slimefight.interfaz.Hud;
 import utiles.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PantallaJuego extends Pantalla {
     private Stage stage;
@@ -39,6 +41,8 @@ public class PantallaJuego extends Pantalla {
     private AyudanteMapas ayudanteMapas;
     private final Matrix4 matrizDebug = new Matrix4();
     private Hud hud;
+    private final Map<Integer, TomarInput> inputsPorSlime = new HashMap<>();
+    private int idLocal = 0;   // el slime que controla esta PC
 
     ArrayList<Slime> slimes;
 
@@ -65,8 +69,8 @@ public class PantallaJuego extends Pantalla {
 
         // contact listener bullshit
         world.setContactListener(new ContactListener() {
-            @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); Utils.contactoBala(c); }
-            @Override public void endContact(Contact c) { Utils.contactoPies(c, -1); }
+            @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); Utils.contactoParedes(c, 1); Utils.contactoBala(c); }
+            @Override public void endContact(Contact c) { Utils.contactoPies(c, -1);  Utils.contactoParedes(c, -1); }
             @Override public void preSolve(Contact c, Manifold m) {}
             @Override public void postSolve(Contact c, ContactImpulse i) {}
         });
@@ -82,9 +86,19 @@ public class PantallaJuego extends Pantalla {
         bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         jugador = new Slime(Utils.crearCuerpo(32, 32, 26, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(tojo), new Sprite(tboca), Color.WHITE, false);
         botardo = new Slime(Utils.crearCuerpo(32, 32, 26, 32, BodyDef.BodyType.DynamicBody, world), new Sprite(bojo), new Sprite(bboca), Color.SKY, false);
-        // TODO: sacar lista de slimes de pantalla lobby multiplayer
         slimes.add(jugador);
         slimes.add(botardo);
+        // TODO: sacar lista de slimes de pantalla lobby multiplayer
+
+        // Añade slimes
+        for (int i = 0; i < slimes.size(); i++) {
+            Slime s = slimes.get(i);
+            s.setId(i);
+            // el local usa el input del teclado, el resto uno propio (por ahora vacío)
+            inputsPorSlime.put(i, i == idLocal ? inputs : new TomarInput());
+        }
+
+        // Spawns iniciales de slimes
         int posID = 0;
         for (Slime slime : slimes) {
             stage.addActor(slime);
@@ -93,10 +107,11 @@ public class PantallaJuego extends Pantalla {
             slime.setPosicionPx(spawn.x, spawn.y);
             posID++;
         }
+
         // debug añade el armatest al jugador
         Texture tarma = new Texture(Utils.obtenerRutaInterna("armas/arma1.png"));
         tarma.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        Arma armatest = new Arma("AK47", world, 0, -5, 65, 21, tarma, 3, 23, 25, 0, 7, 2.0f, 10, 1);
+        Arma armatest = new Arma("AK47", world, 0, -5, 65, 21, tarma, 3, 23, 25, 0.1f, 7, 2.0f, 25, 1);
         jugador.setArma(armatest);
         stage.addActor(armatest);
 
@@ -204,8 +219,16 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void update(float delta) {
-        jugador.update(delta, inputs);
-        botardo.update(delta, new TomarInput());
+        for (Slime slime : slimes) {
+            if (slime.isEstaMuerto()) continue;
+            slime.setBloqueado(!hud.isCuentaAtrasFinalizada());
+            if (slime.getY() < ayudanteMapas.getyLetal()) {
+                slime.morir();
+                continue;
+            }
+            TomarInput input = inputsPorSlime.get(slime.getId());
+            slime.update(delta, input != null ? input : new TomarInput());
+        }
 
         float tiempoFrame = Math.min(delta, 0.25f); // Limite a delta en caso de lag spike (como si fuera a pasar xdd)
         acumulador += tiempoFrame; // libgdx te amo estas re bien documentado

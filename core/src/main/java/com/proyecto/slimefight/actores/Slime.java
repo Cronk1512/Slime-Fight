@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import utiles.Config;
 import utiles.Constantes;
@@ -16,9 +17,13 @@ import utiles.Utils;
 
 public class Slime extends Actor {
 
+    private int id;
+
     // Cuerpo
     private Body cuerpo;
     private int contactosPiso = 0;
+    private int contactosParedD = 0;
+    private int contactosParedI = 0;
 
     // Sprites
     private Sprite ojos;
@@ -56,12 +61,18 @@ public class Slime extends Actor {
     boolean puedeSaltar = true;
     boolean puedeDisparar = false;
     boolean tocandoPiso = false;
+    boolean tocandoParedD = false;
+    boolean tocandoParedI = false;
     boolean saltando = false;
+    boolean soltoBotonSalto = false; // Para que no perma salte en las paredes
+    boolean estaMuerto = false;
 
     // stats
     private float porcentajeVida = 0;
     private float velocidad = 6.5f; // Metros por segundo (1m = 32p)
     private float poder_salto = 12.0f;
+    private int limiteSaltoPared = 2;
+    private int saltoParedActual = 0;
     private Arma arma;
 
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
@@ -94,12 +105,10 @@ public class Slime extends Actor {
     */
 
     public void update(float delta, TomarInput input) {
-        if (!bloqueado) {
-            moverPersonaje(delta, input);
-            sincronizarConCuerpo();
-            actualizarColliders();
-            if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
-        }
+        if (!bloqueado) moverPersonaje(delta, input);
+        sincronizarConCuerpo();
+        actualizarColliders();
+        if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
     }
 
     private void sincronizarConCuerpo() {
@@ -116,7 +125,10 @@ public class Slime extends Actor {
         // Movimiento vertical
         boolean estabaEnPiso = tocandoPiso;
         tocandoPiso = contactosPiso > 0;
+        tocandoParedD = contactosParedD > 0;
+        tocandoParedI = contactosParedI > 0;
         if (puedeSaltar && input.saltar) {
+            // Salto normal
             cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto);
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
@@ -124,10 +136,32 @@ public class Slime extends Actor {
             animScaleY = 1.3f;
             animScaleX = 0.7f;
         }
+        // Salto pared
+        if (input.saltar && soltoBotonSalto && !tocandoPiso && saltoParedActual < limiteSaltoPared) { // Salto en paredes
+            if (tocandoParedD) {
+                impulsoX -= 12f;
+                saltoParedActual += 1;
+                cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto/1.2f);
+                puedeSaltar = false;
+                animScaleY = 1.3f;
+                animScaleX = 0.7f;
+            } else if (tocandoParedI) {
+                impulsoX += 12f;
+                saltoParedActual += 1;
+                cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto/1.2f);
+                puedeSaltar = false;
+                animScaleY = 1.3f;
+                animScaleX = 0.7f;
+            }
 
+        }
+        soltoBotonSalto = !input.saltar;
+
+        // TODO deberia caer mas lento si esta pegado a una pared
 
         if (tocandoPiso && !estabaEnPiso) { // Aterrizo
             puedeSaltar = true;
+            saltoParedActual = 0;
             coyote_time = 0;
             float fuerzaImpacto = MathUtils.clamp(Math.abs(velYPrevia) / poder_salto, 0.2f, 1.0f);
             animScaleX = 1.5f * fuerzaImpacto;
@@ -227,6 +261,17 @@ public class Slime extends Actor {
         hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
     }
 
+    public void morir() {
+        if (estaMuerto) return;
+        estaMuerto = true;
+        if (arma != null) {
+            arma.destruir();
+            arma = null;
+        }
+        cuerpo.getWorld().destroyBody(cuerpo);
+        remove();
+    }
+
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (volteado) {
@@ -276,6 +321,14 @@ public class Slime extends Actor {
         contactosPiso += d;
     }
 
+    public void sumarContactoPared(int d, boolean paredDerecha) {
+        if (paredDerecha) {
+            contactosParedD += d;
+            return;
+        }
+        contactosParedI += d;
+    }
+
     public void setArma(Arma arma) {
         this.arma = arma;
     }
@@ -288,9 +341,17 @@ public class Slime extends Actor {
         return porcentajeVida;
     }
 
+    public boolean isEstaMuerto() {
+        return estaMuerto;
+    }
+
     public Texture getTexturaCuerpo() { return textura; }
 
     public Sprite getOjos() { return ojos; }
 
     public Sprite getBoca() { return boca; }
+
+    public int getId() { return id; }
+
+    public void setId(int id) { this.id = id; }
 }
