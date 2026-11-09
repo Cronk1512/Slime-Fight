@@ -104,7 +104,9 @@ public class Bala extends Actor {
         remove();
     }
 
-
+    public int getDuenoId() {
+        return dueno.getId();
+    }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {

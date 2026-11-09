@@ -75,6 +75,12 @@ public class Slime extends Actor {
     private int saltoParedActual = 0;
     private Arma arma;
 
+    // detectar ultimo atacante (para cosas de puntos)
+    private int ultimoAtacanteId = -1;
+    private long msUltimoGolpe;
+    private static final long VENTANA_ATRIBUCION_MS = 4000; // Si se muere fuera de esta ventana entonce no points for u (rip bozo + L + skill issue)
+    private java.util.function.Consumer<Slime> oyenteMuerte; // esto es re piola te deja guardarte una funcion de otro archivo basicamente
+
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
@@ -268,6 +274,7 @@ public class Slime extends Actor {
     public void morir() {
         if (estaMuerto) return;
         estaMuerto = true;
+        if (oyenteMuerte != null) oyenteMuerte.accept(this);
         if (arma != null) {
             arma.destruir();
             arma = null;
@@ -297,10 +304,17 @@ public class Slime extends Actor {
     }
 
     public void recibirDano(Bala bala) {
+        if (estaMuerto) return;
+        ultimoAtacanteId = bala.getDuenoId();
+        msUltimoGolpe = System.currentTimeMillis();
         porcentajeVida += bala.dano;
         int dir = bala.dirDerecha() ? 1 : -1;
-        System.out.println(porcentajeVida);
         aplicarImpulso(dir * bala.knockback, 2);
+    }
+
+    public int getAtacanteValido() {
+        boolean valido = System.currentTimeMillis() - msUltimoGolpe < VENTANA_ATRIBUCION_MS;
+        return valido ? ultimoAtacanteId : -1;
     }
 
     public void aplicarImpulso(float x, float y) {
@@ -321,6 +335,10 @@ public class Slime extends Actor {
         sincronizarConCuerpo();
     }
 
+    public void setOyenteMuerte(java.util.function.Consumer<Slime> oyente) {
+        this.oyenteMuerte = oyente;
+    }
+
     public void sumarContactoPiso(int d) {
         contactosPiso += d;
     }
@@ -335,6 +353,10 @@ public class Slime extends Actor {
 
     public void setArma(Arma arma) {
         this.arma = arma;
+    }
+
+    public Arma getArma() {
+        return arma;
     }
 
     public void setBloqueado(boolean bloqueado) {
