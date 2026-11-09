@@ -64,7 +64,7 @@ public class Slime extends Actor {
     boolean tocandoParedD = false;
     boolean tocandoParedI = false;
     boolean saltando = false;
-    boolean soltoBotonSalto = false; // Para que no perma salte en las paredes
+    boolean soltoBotonSalto = true; // Inicializado en true para evitar auto-saltos al iniciar
     boolean estaMuerto = false;
 
     // stats
@@ -103,13 +103,6 @@ public class Slime extends Actor {
         setColor(color);
     }
 
-    /*
-    @Override
-    public void act (float delta) {
-
-    }
-    */
-
     public void update(float delta, TomarInput input) {
         if (!bloqueado) moverPersonaje(delta, input);
         sincronizarConCuerpo();
@@ -133,37 +126,48 @@ public class Slime extends Actor {
         tocandoPiso = contactosPiso > 0;
         tocandoParedD = contactosParedD > 0;
         tocandoParedI = contactosParedI > 0;
-        if (puedeSaltar && input.saltar) {
-            // Salto normal
+
+        // Detectar si el usuario acaba de presionar el botón de salto en este frame específico
+        boolean saltoRecienPresionado = input.saltar && soltoBotonSalto;
+
+        // Salto normal
+        if (puedeSaltar && saltoRecienPresionado) {
             cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto);
             timerAplastar = 0; // cancela animacion de aterrizar
             puedeSaltar = false;
             saltando = true;
             animScaleY = 1.3f;
             animScaleX = 0.7f;
+            soltoBotonSalto = false; // Consumimos el input para que no se repita
         }
-        // Salto pared
-        if (input.saltar && soltoBotonSalto && !tocandoPiso && saltoParedActual < limiteSaltoPared) { // Salto en paredes
+
+        // Salto en la misma pared (Rebote sutil para re-enganchar)
+        if (saltoRecienPresionado && !tocandoPiso && saltoParedActual < limiteSaltoPared) {
             if (tocandoParedD) {
-                impulsoX -= 12f;
+                impulsoX = -1.2f;
                 saltoParedActual += 1;
-                cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto/1.2f);
+                cuerpo.setLinearVelocity(impulsoX, poder_salto / 1.15f);
                 puedeSaltar = false;
+                saltando = true;
                 animScaleY = 1.3f;
                 animScaleX = 0.7f;
+                soltoBotonSalto = false; // Consumimos el input
             } else if (tocandoParedI) {
-                impulsoX += 12f;
+                impulsoX = 1.2f;
                 saltoParedActual += 1;
-                cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, poder_salto/1.2f);
+                cuerpo.setLinearVelocity(impulsoX, poder_salto / 1.15f);
                 puedeSaltar = false;
+                saltando = true;
                 animScaleY = 1.3f;
                 animScaleX = 0.7f;
+                soltoBotonSalto = false; // Consumimos el input
             }
-
         }
-        soltoBotonSalto = !input.saltar;
 
-        // TODO deberia caer mas lento si esta pegado a una pared
+        // Actualizamos el flag de soltar el botón de salto
+        if (!input.saltar) {
+            soltoBotonSalto = true;
+        }
 
         if (tocandoPiso && !estabaEnPiso) { // Aterrizo
             puedeSaltar = true;
