@@ -1,5 +1,9 @@
 package com.proyecto.slimefight;
 
+import com.badlogic.gdx.graphics.Color;
+import com.proyecto.slimefight.clases.Jugador;
+import com.proyecto.slimefight.clases.Punto;
+
 import java.util.ArrayList;
 
 public class ManagerJuego {
@@ -8,22 +12,26 @@ public class ManagerJuego {
     public enum Estado {
         CUENTA_ATRAS, // 3, 2, 1 Fight
         JUGANDO, // La ronda como tal
-        FIN_RONDA, // 3 segs al final de la ronda como para pelotudear
+        FIN_RONDA, // 3 segs al final de la ronda como para toxiquear
         FIN_PARTIDA // Fin de la partida
     }
 
     public static final int MAX_JUGADORES = 4;
     public static final int PUNTOS_PARA_GANAR = 15;
     public static final int PUNTOS_MODIFICADORES = 7;
-    public static final int PUNTOS_VICTORIA = 2;
-    public static final int PUNTOS_ELIMINACION = 1;
+    public static final Punto PUNTOS_VICTORIA = new Punto("Victoria", 2, Color.YELLOW);
+    public static final Punto PUNTOS_ELIMINACION = new Punto("Eliminacion", 1, Color.RED);
     private static final float ESPERA_FIN_RONDA = 3f;
 
     private final ArrayList<Jugador> jugadores = new ArrayList<>();
     private Estado estado = Estado.CUENTA_ATRAS;
     private float timer;
-    private Jugador ganadorRonda, ganadorPartida;
+    private Jugador ganadorPartida;
     private boolean cambioDeMapaPendiente;
+
+    public Estado getEstado() {
+        return estado;
+    }
 
     public void update(float delta, boolean cuentaAtrasFinalizada) {
         switch (estado) {
@@ -41,8 +49,7 @@ public class ManagerJuego {
                     }
                 }
                 if (vivos <= 1) {
-                    ganadorRonda = vivo;
-                    if (vivo != null) vivo.sumarPuntos(PUNTOS_VICTORIA);
+                    if (vivo != null) vivo.sumarPuntos(new Punto(PUNTOS_VICTORIA));
                     estado = Estado.FIN_RONDA;
                     timer = 0;
                 }
@@ -67,16 +74,19 @@ public class ManagerJuego {
 
     public void alMorir(Jugador victima, Jugador asesino) {
         if (estado != Estado.JUGANDO) return;   // no puntuar muertes post-victoria
-        if (asesino != null && asesino != victima) asesino.sumarPuntos(PUNTOS_ELIMINACION);
+        if (asesino != null && asesino != victima) asesino.sumarPuntos(new Punto(PUNTOS_ELIMINACION));
     }
 
     private Jugador buscarGanadorPartida() {
         Jugador mejor = null;
+        int puntosMejor = 0;
         boolean empate = false;
         for (Jugador j : jugadores) {
-            if (j.getPuntos() < PUNTOS_PARA_GANAR) continue;
-            if (mejor == null || j.getPuntos() > mejor.getPuntos()) { mejor = j; empate = false; }
-            else if (j.getPuntos() == mejor.getPuntos()) empate = true;
+            int puntosTotales = 0;
+            for (Punto p : j.getPuntos()) puntosTotales += p.getValor();
+            if (puntosTotales < PUNTOS_PARA_GANAR) continue;
+            if (mejor == null || puntosTotales > puntosMejor) { mejor = j; puntosMejor = puntosTotales; empate = false; }
+            else if (puntosTotales == puntosMejor) empate = true;
         }
         return empate ? null : mejor;   // si empatan arriba, se juega otra ronda
     }

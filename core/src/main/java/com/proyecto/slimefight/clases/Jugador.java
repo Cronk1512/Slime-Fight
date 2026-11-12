@@ -1,15 +1,17 @@
-package com.proyecto.slimefight;
+package com.proyecto.slimefight.clases;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.proyecto.slimefight.actores.Slime;
+
+import java.util.ArrayList;
 
 public class Jugador {
     // TODO en el futuro debe contener su hilo cliente o algo asi ns
 
     private final int id;
     private final String nombre;
-    private int puntos = 0;
+    private ArrayList<Punto> puntos;
 
     private Sprite ojosSlime;
     private Sprite bocaSlime;
@@ -17,12 +19,14 @@ public class Jugador {
 
     private Slime slime;
 
-    public Jugador(int id, String nombre) { this.id = id; this.nombre = nombre; }
+    public Jugador(int id, String nombre) { this.id = id; this.nombre = nombre; puntos = new ArrayList<>(); }
 
-    public void sumarPuntos(int p) { puntos += p; }
+    public void sumarPuntos(Punto p) {
+        puntos.add(p);
+    }
     public int getId() { return id; }
     public String getNombre() { return nombre; }
-    public int getPuntos() { return puntos; }
+    public ArrayList<Punto> getPuntos() { return puntos; }
     public Slime getSlime() { return slime; }
     public void setSlime(Slime s) { this.slime = s; }
 

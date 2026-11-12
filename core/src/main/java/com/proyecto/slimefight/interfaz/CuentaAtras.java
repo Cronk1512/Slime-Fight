@@ -50,7 +50,7 @@ public class CuentaAtras extends Actor {
         if (paso == 0) oldWidth = getWidth();
         if (paso == 3) setWidth(oldWidth*3);
 
-        float escala = 1f + 0.6f * (1f - Interpolation.pow2Out.apply(frac));
+        float escala = 1f + 0.6f * (1f - Interpolation.elasticOut.apply(frac));
         float w = getWidth() * escala;
         float h = getHeight() * escala;
 
