@@ -148,14 +148,14 @@ public class Arma extends Actor {
             puntoDeFuego = new Vector2(getX()+3, getY());
             for (int i = 0; i < cantBalas; i++) {
                 bala = new Bala(mundo, dueno, sprite.getTexture(), puntoDeFuego.x, puntoDeFuego.y, 1, 20, 20, 650, 7, 25, 25, 0);
-                bala.setPropiedades(true, 20, 20);
+                bala.setPropiedades(true, sprite.getWidth()/2, sprite.getHeight()/2);
                 this.getStage().addActor(bala);
             }
         } else {
             puntoDeFuego = new Vector2(getX()+3, getY());
             for (int i = 0; i < cantBalas; i++) {
                 bala = new Bala(mundo, dueno, sprite.getTexture(), puntoDeFuego.x, puntoDeFuego.y, -1, 20, 20, 650, 7, 25, 25, 0);
-                bala.setPropiedades(true, 20, 20);
+                bala.setPropiedades(true, sprite.getWidth()/2, sprite.getHeight()/2);
                 this.getStage().addActor(bala);
             }
         }
