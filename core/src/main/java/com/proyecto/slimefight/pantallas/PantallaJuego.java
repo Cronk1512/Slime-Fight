@@ -15,7 +15,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.proyecto.slimefight.Jugador;
+import com.proyecto.slimefight.clases.Jugador;
 import com.proyecto.slimefight.Main;
 import com.proyecto.slimefight.ManagerJuego;
 import com.proyecto.slimefight.actores.Arma;
@@ -26,6 +26,7 @@ import utiles.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class PantallaJuego extends Pantalla {
     private Stage stage;
@@ -49,7 +50,7 @@ public class PantallaJuego extends Pantalla {
     private final String[] mapas = {"mapa/mapaTest.tmx" /*, ... , ...*/};
     private int mapaActual = 0;
     private ManagerJuego manager = new ManagerJuego();
-    private float timerArmas = 0;
+    private float timerArmas;
     private ArrayList<Arma> armas;
     private ArrayList<Caja> cajas;
 
@@ -106,6 +107,7 @@ public class PantallaJuego extends Pantalla {
         cajas = new ArrayList<>();
         armas = new ArrayList<>();
         Gdx.input.setInputProcessor(inputs);
+        timerArmas = 0;
 
         // contact listener bullshit
         world.setContactListener(new ContactListener() {
@@ -125,12 +127,7 @@ public class PantallaJuego extends Pantalla {
         }
 
         // Spawns de armas
-        for (int i = 0; i < ayudanteMapas.getPuntosDeArmas().size(); i++) {
-            Vector2 v = ayudanteMapas.getPuntosDeArmas().get(i);
-            Caja caja = new Caja(v.x, v.y, world, stage, armas);
-            cajas.add(caja);
-            stage.addActor(caja);
-        }
+        generarArmas(ayudanteMapas.getPuntosDeArmas().size());
 
         Texture tarma = new Texture(Utils.obtenerRutaInterna("armas/arma1.png"));
         tarma.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
@@ -153,6 +150,7 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void descartarRonda() {
+        timerCamara = 0;
         inputsPorSlime.clear();
         if (stage != null) stage.dispose();
         if (mapa != null) mapa.dispose();
@@ -209,6 +207,13 @@ public class PantallaJuego extends Pantalla {
         }
         cajas.removeIf(Caja::isDestruida);
 
+        // Spawnear cajas cada ~15s
+        timerArmas += delta;
+        if (timerArmas >= 15f && cajas.size() < 6) {
+            generarArmas(2);
+            timerArmas = 0;
+        }
+
         for (Slime slime : slimes) {
             if (slime.isEstaMuerto()) continue;
             slime.setBloqueado(!hud.isCuentaAtrasFinalizada());
@@ -227,15 +232,48 @@ public class PantallaJuego extends Pantalla {
             world.step(Constantes.TPP, 6 ,2);
         }
 
-        actualizarCamara();
+        actualizarCamara(delta);
 
         batch.setProjectionMatrix(camara.combined);
         renderer.setView(camara);
     }
 
-    private void actualizarCamara() {
-        Vector2 posCamara = ayudanteMapas.getPosCamara();
-        camara.position.set(new Vector3(posCamara.x, posCamara.y, 0));
+    private void generarArmas(int cant) {
+        ArrayList<Vector2> puntosExcluidos = new ArrayList<>();
+        for (int i = 0; i < cant; i++) {
+            Random rng = new Random();
+            Vector2 v = ayudanteMapas.getPuntosDeArmas().get(rng.nextInt(0, ayudanteMapas.getPuntosDeArmas().size()));
+            if (puntosExcluidos.contains(v)) { // para que no se generen 2 cajas en el mismo spot
+                i--;
+                continue;
+            }
+            puntosExcluidos.add(v);
+            Caja caja = new Caja(v.x, v.y, world, stage, armas);
+            cajas.add(caja);
+            stage.addActor(caja);
+
+            if (puntosExcluidos.size() == ayudanteMapas.getPuntosDeArmas().size()) puntosExcluidos.clear();
+        }
+    }
+
+    private float timerCamara = 0;
+    private void actualizarCamara(float delta) {
+        if (manager.getEstado() == ManagerJuego.Estado.FIN_RONDA) {
+            // Hacer zoom en el slime ganador
+            timerCamara += delta * 2;
+            float frac = Math.min(timerCamara / 3f, 1f);
+            for (Slime s : slimes) {
+                if (s.isEstaMuerto()) continue;
+                float posx = MathUtils.lerp(camara.position.x, (s.getX()+s.getWidth()/2), delta * 1.4f);
+                float posy = MathUtils.lerp(camara.position.y, (s.getY()+s.getHeight()/2), delta * 1.4f);
+                camara.position.set(new Vector3(posx, posy, 0));
+                camara.zoom = 1 - Interpolation.pow2Out.apply(frac) * 0.6f;
+            }
+        } else {
+            Vector2 posCamara = ayudanteMapas.getPosCamara();
+            camara.position.set(new Vector3(posCamara.x, posCamara.y, 0));
+            camara.zoom = 1;
+        }
         camara.update();
     }
 

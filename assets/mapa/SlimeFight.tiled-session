@@ -28,11 +28,11 @@
             "scaleInDock": 1
         },
         "mapaTest.tmx": {
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 408.5,
-                "y": 288
+                "x": 485,
+                "y": 356.6666666666667
             }
         }
     },

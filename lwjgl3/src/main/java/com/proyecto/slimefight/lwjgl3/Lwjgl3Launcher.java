@@ -18,8 +18,8 @@ public class Lwjgl3Launcher {
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
         configuration.setTitle("Slime Fight");
-        configuration.useVsync(true);
-        configuration.setForegroundFPS(60);
+        configuration.useVsync(false);
+        configuration.setForegroundFPS(120);
 
         configuration.setWindowedMode(1280, 720);
         configuration.setResizable(false);
