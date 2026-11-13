@@ -23,7 +23,8 @@ public class Arma extends Actor {
     private float cooldown;
     private int durabilidad;
     private float dispersion;
-    private float tamañoBala;
+    private float anchoBala;
+    private float altoBala;
     private float cantBalas;
     private Slime dueno;
     private World mundo;
@@ -33,7 +34,7 @@ public class Arma extends Actor {
     private float timerCooldown = 0;
 
     public Arma(String nombre, World mundo, float offsetX, float offsetY, float width, float height, Texture textura,
-                int dano, float knockback, float rango, float dispersion, float tamañoBala, float cooldown, int durabilidad, int cantBalas) {
+                int dano, float knockback, float rango, float dispersion, float anchoBala, float altoBala, float cooldown, int durabilidad, int cantBalas) {
         textura.setFilter(TextureFilter.Nearest,TextureFilter.Nearest);
         sprite = new Sprite(textura);
 
@@ -51,8 +52,8 @@ public class Arma extends Actor {
         this.cooldown = cooldown;
         this.durabilidad = durabilidad;
         this.dispersion = dispersion;
-        if (tamañoBala<5) tamañoBala = 5;
-        this.tamañoBala = Math.abs(tamañoBala);
+        this.anchoBala = Math.max(5f, Math.abs(anchoBala));
+        this.altoBala = Math.max(5f, Math.abs(altoBala));
         if (cantBalas==0) cantBalas = 1;
         this.cantBalas = Math.abs(cantBalas);
 
@@ -76,9 +77,8 @@ public class Arma extends Actor {
         this.cooldown = arma.cooldown;
         this.durabilidad = arma.durabilidad;
         this.dispersion = arma.dispersion;
-        tamañoBala = arma.tamañoBala;
-        if (tamañoBala<5) tamañoBala = 5;
-        this.tamañoBala = Math.abs(tamañoBala);
+        this.anchoBala = Math.max(5f, Math.abs(arma.anchoBala));
+        this.altoBala = Math.max(5f, Math.abs(arma.altoBala));
         cantBalas = arma.cantBalas;
         if (cantBalas==0) cantBalas = 1;
         this.cantBalas = Math.abs(cantBalas);
@@ -125,13 +125,13 @@ public class Arma extends Actor {
             if (!volteado && !estaRoto) { // disparacion
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, 1, tamañoBala, 500, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, 1,anchoBala,altoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             } else if (!estaRoto) {
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, -1, tamañoBala, 500, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, -1, anchoBala,altoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             }
