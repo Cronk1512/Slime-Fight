@@ -60,12 +60,14 @@ public class Slime extends Actor {
     boolean bloqueado = false; // Hace que no pueda tomar ninguna accion (para el inicio del juego)
     boolean puedeSaltar = true;
     boolean puedeDisparar = false;
+    boolean puedeLanzarArma = false;
     boolean tocandoPiso = false;
     boolean tocandoParedD = false;
     boolean tocandoParedI = false;
     boolean saltando = false;
     boolean soltoBotonSalto = true; // Inicializado en true para evitar auto-saltos al iniciar
     boolean estaMuerto = false;
+    boolean agachado = false;
 
     // stats
     private float porcentajeVida = 0;
@@ -198,6 +200,12 @@ public class Slime extends Actor {
         velYPrevia = cuerpo.getLinearVelocity().y;
         cuerpo.setLinearVelocity(moveX * velocidad + impulsoX, cuerpo.getLinearVelocity().y);
 
+        // Agarrar arma del piso
+        agachado = input.abajo && moveX == 0 && Math.abs(cuerpo.getLinearVelocity().y) < 0.01f;
+        if (agachado) {
+            // TODO agregar logica de agarrar armas tiradas en el piso
+        }
+
         // Impulsos
         if (impulsoX != 0) {
             impulsoX = MathUtils.lerp(impulsoX, 0, delta * 5f);
@@ -206,9 +214,17 @@ public class Slime extends Actor {
 
         // Shoot ze gun
         if (!input.disparar) puedeDisparar = true;
-        if (input.disparar && puedeDisparar && arma != null) {
-            arma.disparar();
+        if (input.disparar && puedeDisparar) {
+            if (arma != null) arma.disparar();
             puedeDisparar = false;
+        }
+
+        if (!input.lanzar_arma) puedeLanzarArma = true;
+        if (input.lanzar_arma && puedeLanzarArma) {
+            if (arma != null)  arma.lanzarArma();
+            puedeDisparar = false;
+            arma = null;
+            puedeLanzarArma = false;
         }
 
         // Voltear si va para atras
@@ -247,7 +263,7 @@ public class Slime extends Actor {
             animScaleY = 1.0f - (wobbleWave * 0.3f);
         } else {
             // default ass walk
-            if (moveX == 0 && Math.abs(cuerpo.getLinearVelocity().y) < 0.01f) {
+            if (moveX == 0 && Math.abs(cuerpo.getLinearVelocity().y) < 0.01f && !agachado) {
                 // si no se mueve rebota como animacion idle
                 walkTimer += delta * 12f;
                 animScaleY = 1.0f - (MathUtils.sin(walkTimer) * REBOTE_IDLE);
@@ -380,4 +396,8 @@ public class Slime extends Actor {
     public int getId() { return id; }
 
     public void setId(int id) { this.id = id; }
+
+    public boolean isAgachado() {
+        return agachado;
+    }
 }

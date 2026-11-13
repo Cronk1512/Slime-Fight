@@ -30,13 +30,13 @@
    <polygon points="0,0 0,256 -32,256 -32,0"/>
   </object>
   <object id="17" type="Piso" x="352" y="384">
-   <polygon points="0,0 32,0 32,-96 0,-96 0,0"/>
+   <polygon points="0,0 32,0 32,-128 0,-128 0,0"/>
   </object>
   <object id="18" type="Piso" x="512" y="384">
-   <polygon points="0,0 32,0 32,-96 0,-96"/>
+   <polygon points="0,0 32,0 32,-128 0,-128"/>
   </object>
-  <object id="19" type="Piso" x="544" y="288">
-   <polygon points="0,0 0,-32 -192,-32 -192,0"/>
+  <object id="19" type="Piso" x="512" y="288">
+   <polygon points="0,0 0,-32 -128,-32 -128,0"/>
   </object>
   <object id="20" type="Piso" x="350.667" y="480">
    <polygon points="0,0 289.333,0 289.333,32 0,32"/>

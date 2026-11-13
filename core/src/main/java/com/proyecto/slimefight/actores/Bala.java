@@ -3,6 +3,7 @@ package com.proyecto.slimefight.actores;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -15,13 +16,11 @@ import utiles.Utils;
 import java.util.Random;
 
 public class Bala extends Actor {
-    private static Texture pixel;
-    public Rectangle hitbox;
+    private Sprite textura;
     private final float direccionX, direccionY;
 
     public int dano;
     public float knockback;
-    private float velocidad;
     private float tiempoDeVida;
 
     private final Body cuerpo;
@@ -29,17 +28,19 @@ public class Bala extends Actor {
     private boolean impactada = false;
     private Slime objetivo = null;  // null = impactó terreno
 
+    private boolean rotar = false;
+    private float escalaExtraW = 0;
+    private float escalaExtraH = 0;
 
     // Bala
-    public Bala(World mundo, Slime dueno, float x, float y, float dirX, float scaleX, float scaleY, float velocidad, int dano, float knockback, float rango, float dispersion) {
+    public Bala(World mundo, Slime dueno, Texture texture, float x, float y, float dirX, float scaleX, float scaleY, float velocidad, int dano, float knockback, float rango, float dispersion) {
         // textura
-        if (pixel == null) pixel = new Texture(Utils.obtenerRutaInterna("pixel_blanco.png"));
+        if (textura == null) textura = new Sprite(texture);
         this.dueno = dueno;
 
         // Tamaño y pos
         setPosition(x, y);
         setSize(scaleX, scaleY);
-        hitbox = new Rectangle(x, y, getWidth(), getHeight());
 
         // Direccion
         Random rng = new Random();
@@ -62,6 +63,8 @@ public class Bala extends Actor {
         FixtureDef fd = new FixtureDef();
         fd.shape = figura;
         fd.isSensor = true;
+        fd.filter.categoryBits = Constantes.CATEGORIA_BALA;
+        fd.filter.maskBits = (Constantes.CATEGORIA_TERRENO | Constantes.CATEGORIA_SLIME | Constantes.CATEGORIA_CAJAS);
         cuerpo.createFixture(fd);
         figura.dispose();
 
@@ -72,6 +75,12 @@ public class Bala extends Actor {
         this.dano = dano;
         this.knockback = knockback;
         tiempoDeVida = rango;
+    }
+
+    public void setPropiedades(boolean rotar, float escalaTexturaX, float escalaTexturaY) {
+        this.rotar = rotar;
+        escalaExtraW = escalaTexturaX;
+        escalaExtraH = escalaTexturaY;
     }
 
     public void impactar(Slime objetivo) {
@@ -85,6 +94,11 @@ public class Bala extends Actor {
         super.act(delta);
         tiempoDeVida -= delta * 5f;
 
+
+        if (rotar) {
+            textura.rotate(500 * delta);
+        }
+
         if (impactada) {
             if (objetivo != null) objetivo.recibirDano(this);
             destruir();
@@ -96,7 +110,9 @@ public class Bala extends Actor {
         }
 
         setPosition(cuerpo.getPosition().x * Constantes.PPM - getWidth() / 2f, cuerpo.getPosition().y * Constantes.PPM - getHeight() / 2f);
-        hitbox.set(getX(), getY(), getWidth(), getHeight());
+        textura.setPosition(getX(), getY());
+        textura.setSize(getWidth() + escalaExtraW, getHeight() + escalaExtraH);
+        textura.setOriginCenter();
     }
 
     private void destruir() {
@@ -112,7 +128,7 @@ public class Bala extends Actor {
     public void draw(Batch batch, float parentAlpha) {
         Color oldColor = new Color(batch.getColor());
         batch.setColor(Color.YELLOW);
-        batch.draw(pixel, getX(), getY(), getWidth(), 2);
+        textura.draw(batch);
         batch.setColor(oldColor);
     }
 

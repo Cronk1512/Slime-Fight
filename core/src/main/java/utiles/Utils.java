@@ -35,6 +35,16 @@ public class Utils {
         if (ud instanceof Bala) return;                 // bala contra bala: ignorar
         if ("pies".equals(otro.getUserData())) return;  // sensor de pies del slime
 
+        if (ud instanceof Caja) {
+            if (bala.dirDerecha()) {
+                ((Caja) ud).empujar(5, 1);
+            } else {
+                ((Caja) ud).empujar(-5, 1);
+            }
+            bala.impactar(null);
+            return;
+        }
+
         if (ud instanceof Slime) {
             if (ud == bala.getDueno()) return;          // no pegarse a uno mismo
             bala.impactar((Slime) ud);
@@ -108,14 +118,6 @@ public class Utils {
         paredI.dispose();
         paredD.dispose();
         return cuerpo;
-    }
-
-    public static boolean verificarColisionBala(Slime jugador, Bala bala) {
-        if (jugador.hitbox.overlaps(bala.hitbox)) {
-           System.out.println("COLISON!");
-           return true;
-        }
-        return false;
     }
 
     public static void dibujarSlime(Batch batch, TextureRegion region, Actor actor, Body cuerpo, float inclinacion, float scaleX, float scaleY) {

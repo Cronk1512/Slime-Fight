@@ -20,6 +20,7 @@ public abstract class Config {
         public static final int MOVER_ABA = Keys.DOWN;
         public static final int SALTAR = Keys.UP;
         public static final int DISPARAR = Keys.J;
+        public static final int LANZAR_ARMA = Keys.K;
     }
 
 

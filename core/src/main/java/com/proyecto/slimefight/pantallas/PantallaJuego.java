@@ -22,6 +22,7 @@ import com.proyecto.slimefight.actores.Arma;
 import com.proyecto.slimefight.actores.Caja;
 import com.proyecto.slimefight.actores.Slime;
 import com.proyecto.slimefight.interfaz.Hud;
+import com.proyecto.slimefight.interfaz.MostradorPuntaje;
 import utiles.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ public class PantallaJuego extends Pantalla {
     private AyudanteMapas ayudanteMapas;
     private final Matrix4 matrizDebug = new Matrix4();
     private Hud hud;
+    private MostradorPuntaje mostradorPuntaje;
     private final Map<Integer, TomarInput> inputsPorSlime = new HashMap<>();
     private int idLocal = 0;   // el slime que controla esta PC
     private final String[] mapas = {"mapa/mapaTest.tmx" /*, ... , ...*/};
@@ -75,7 +77,7 @@ public class PantallaJuego extends Pantalla {
 
         // Jugadores placeholder
         Jugador jugador1 = new Jugador(0, "Luxor89");
-        Jugador jugador2 = new Jugador(1, "Cronk1512");
+        Jugador jugador2 = new Jugador(1, "Botardo");
         jugador1.setOjosSlime(new Sprite(tojo));
         jugador1.setBocaSlime(new Sprite(tboca));
         jugador1.setColorSlime(Color.WHITE);
@@ -86,8 +88,9 @@ public class PantallaJuego extends Pantalla {
         manager.añadirJugador(jugador1);
         manager.añadirJugador(jugador2);
 
-        cargarRonda(mapas[mapaActual]);        // <- primero: crea world, stage y slimes
-        hud = new Hud(manager.getJugadores()); // <- ahora getSlime() ya no es null
+        cargarRonda(mapas[mapaActual]);
+        hud = new Hud(manager.getJugadores());
+        mostradorPuntaje = new MostradorPuntaje(manager.getJugadores());
     }
 
     private void cargarRonda(String ruta) {
@@ -130,8 +133,10 @@ public class PantallaJuego extends Pantalla {
         generarArmas(ayudanteMapas.getPuntosDeArmas().size());
 
         Texture tarma = new Texture(Utils.obtenerRutaInterna("armas/arma1.png"));
+        Texture tbala = new Texture(Utils.obtenerRutaInterna("bala.png"));
         tarma.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        armas.add(new Arma("AK47", world, 0, -5, 65, 27, tarma, 3, 27, 25, 0.1f, 7,5, 1.0f, 25, 1));
+        tbala.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        armas.add(new Arma("AK47", world, 0, -5, 65, 27, tarma, 3, 27, 25, 0.1f, 7,5, tbala, 1.0f, 25, 1));
 
 
         // Spawns iniciales de slimes
@@ -145,8 +150,9 @@ public class PantallaJuego extends Pantalla {
         }
 
         if (hud != null) hud.reiniciarCuentaAtras();
-
         if (hud != null) hud.actualizarSlimes();
+
+        if (mostradorPuntaje != null) mostradorPuntaje.actualizarSlimes();
     }
 
     private void descartarRonda() {
@@ -190,6 +196,8 @@ public class PantallaJuego extends Pantalla {
         // UI
         hud.update(delta);
         hud.draw();
+        mostradorPuntaje.update(delta);
+        mostradorPuntaje.draw();
     }
 
     private void update(float delta) {
@@ -202,6 +210,10 @@ public class PantallaJuego extends Pantalla {
         }
 
         for (Caja caja : cajas) {
+            if (caja.getY() < ayudanteMapas.getyLetal()) {
+                caja.destruir();
+                continue;
+            }
             Slime s = caja.getRecogidaPor();
             if (s != null && !s.isEstaMuerto() && !caja.isDestruida()) caja.generarArma(s);
         }
@@ -267,7 +279,7 @@ public class PantallaJuego extends Pantalla {
                 float posx = MathUtils.lerp(camara.position.x, (s.getX()+s.getWidth()/2), delta * 1.4f);
                 float posy = MathUtils.lerp(camara.position.y, (s.getY()+s.getHeight()/2), delta * 1.4f);
                 camara.position.set(new Vector3(posx, posy, 0));
-                camara.zoom = 1 - Interpolation.pow2Out.apply(frac) * 0.6f;
+                camara.zoom = Math.max(1 - Interpolation.exp10Out.apply(frac) * 0.6f, 0.4f);
             }
         } else {
             Vector2 posCamara = ayudanteMapas.getPosCamara();
@@ -282,6 +294,7 @@ public class PantallaJuego extends Pantalla {
         super.resize(width,height);
         viewport.update(width, height);
         hud.resize(width, height);
+        mostradorPuntaje.resize(width, height);
     }
 
     @Override

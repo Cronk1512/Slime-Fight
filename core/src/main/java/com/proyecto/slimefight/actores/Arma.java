@@ -28,13 +28,13 @@ public class Arma extends Actor {
     private float cantBalas;
     private Slime dueno;
     private World mundo;
-
+    private Texture texturaBala;
     private boolean estaRoto = false;
 
     private float timerCooldown = 0;
 
     public Arma(String nombre, World mundo, float offsetX, float offsetY, float width, float height, Texture textura,
-                int dano, float knockback, float rango, float dispersion, float anchoBala, float altoBala, float cooldown, int durabilidad, int cantBalas) {
+                int dano, float knockback, float rango, float dispersion, float anchoBala, float altoBala, Texture texturaBala, float cooldown, int durabilidad, int cantBalas) {
         textura.setFilter(TextureFilter.Nearest,TextureFilter.Nearest);
         sprite = new Sprite(textura);
 
@@ -46,16 +46,18 @@ public class Arma extends Actor {
         offY = offsetY;
 
         this.nombre = nombre;
-        this.dano = dano;
-        this.knockback = knockback;
-        this.rango = rango;
         this.cooldown = cooldown;
         this.durabilidad = durabilidad;
+        if (cantBalas==0) cantBalas = 1;
+        this.cantBalas = Math.abs(cantBalas);
+
+        this.texturaBala = texturaBala;
         this.dispersion = dispersion;
         this.anchoBala = Math.max(5f, Math.abs(anchoBala));
         this.altoBala = Math.max(5f, Math.abs(altoBala));
-        if (cantBalas==0) cantBalas = 1;
-        this.cantBalas = Math.abs(cantBalas);
+        this.dano = dano;
+        this.knockback = knockback;
+        this.rango = rango;
 
         this.mundo = mundo;
     }
@@ -71,17 +73,17 @@ public class Arma extends Actor {
         offY = arma.offY;
 
         this.nombre = arma.nombre;
+        this.cooldown = arma.cooldown;
+        this.durabilidad = arma.durabilidad;
+        cantBalas = arma.cantBalas;
+
+        this.texturaBala = arma.texturaBala;
         this.dano = arma.dano;
         this.knockback = arma.knockback;
         this.rango = arma.rango;
-        this.cooldown = arma.cooldown;
-        this.durabilidad = arma.durabilidad;
         this.dispersion = arma.dispersion;
         this.anchoBala = Math.max(5f, Math.abs(arma.anchoBala));
         this.altoBala = Math.max(5f, Math.abs(arma.altoBala));
-        cantBalas = arma.cantBalas;
-        if (cantBalas==0) cantBalas = 1;
-        this.cantBalas = Math.abs(cantBalas);
 
         this.mundo = arma.mundo;
     }
@@ -125,17 +127,39 @@ public class Arma extends Actor {
             if (!volteado && !estaRoto) { // disparacion
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, 1,anchoBala,altoBala, 500, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, texturaBala, puntoDeFuego.x, puntoDeFuego.y, 1,anchoBala, altoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             } else if (!estaRoto) {
                 puntoDeFuego = new Vector2(getX()+3, getY()+getHeight()/2);
                 for (int i = 0; i < cantBalas; i++) {
-                    bala = new Bala(mundo, dueno, puntoDeFuego.x, puntoDeFuego.y, -1, anchoBala,altoBala, 500, dano, knockback, rango, dispersion);
+                    bala = new Bala(mundo, dueno, texturaBala, puntoDeFuego.x, puntoDeFuego.y, -1, anchoBala, altoBala, 500, dano, knockback, rango, dispersion);
                     this.getStage().addActor(bala);
                 }
             }
         }
+    }
+
+    public void lanzarArma() {
+        Bala bala;
+        Vector2 puntoDeFuego;
+
+        if (!volteado) { // lanza le arma (lo mismo que disparar basicamente)
+            puntoDeFuego = new Vector2(getX()+3, getY());
+            for (int i = 0; i < cantBalas; i++) {
+                bala = new Bala(mundo, dueno, sprite.getTexture(), puntoDeFuego.x, puntoDeFuego.y, 1, 20, 20, 650, 7, 25, 25, 0);
+                bala.setPropiedades(true, 20, 20);
+                this.getStage().addActor(bala);
+            }
+        } else {
+            puntoDeFuego = new Vector2(getX()+3, getY());
+            for (int i = 0; i < cantBalas; i++) {
+                bala = new Bala(mundo, dueno, sprite.getTexture(), puntoDeFuego.x, puntoDeFuego.y, -1, 20, 20, 650, 7, 25, 25, 0);
+                bala.setPropiedades(true, 20, 20);
+                this.getStage().addActor(bala);
+            }
+        }
+        destruir();
     }
 
     public void destruir() {

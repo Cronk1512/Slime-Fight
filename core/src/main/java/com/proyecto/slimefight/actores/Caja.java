@@ -48,7 +48,7 @@ public class Caja extends Actor {
         FixtureDef sensor = new FixtureDef();
         principal.shape = figura;
         principal.filter.categoryBits = Constantes.CATEGORIA_CAJAS;
-        principal.filter.maskBits = (Constantes.CATEGORIA_TERRENO | Constantes.CATEGORIA_CAJAS);
+        principal.filter.maskBits = (Constantes.CATEGORIA_TERRENO | Constantes.CATEGORIA_CAJAS | Constantes.CATEGORIA_BALA);
         sensor.shape = detector;
         sensor.isSensor = true;
         sensor.filter.categoryBits = Constantes.CATEGORIA_CAJAS;
@@ -83,7 +83,12 @@ public class Caja extends Actor {
         destruir();
     }
 
-    private void destruir() {
+
+    public void empujar(float x, float y) {
+        cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x + x, cuerpo.getLinearVelocity().y + y);
+    }
+
+    public void destruir() {
         if (destruida) return;
         destruida = true;
         cuerpo.getWorld().destroyBody(cuerpo);
