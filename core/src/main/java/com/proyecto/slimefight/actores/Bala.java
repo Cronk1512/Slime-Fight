@@ -31,14 +31,14 @@ public class Bala extends Actor {
 
 
     // Bala
-    public Bala(World mundo, Slime dueno, float x, float y, float dirX, float scaleX, float velocidad, int dano, float knockback, float rango, float dispersion) {
+    public Bala(World mundo, Slime dueno, float x, float y, float dirX, float scaleX, float scaleY, float velocidad, int dano, float knockback, float rango, float dispersion) {
         // textura
         if (pixel == null) pixel = new Texture(Utils.obtenerRutaInterna("pixel_blanco.png"));
         this.dueno = dueno;
 
         // Tamaño y pos
         setPosition(x, y);
-        setSize(scaleX, 2);
+        setSize(scaleX, scaleY);
         hitbox = new Rectangle(x, y, getWidth(), getHeight());
 
         // Direccion

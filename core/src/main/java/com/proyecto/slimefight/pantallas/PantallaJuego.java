@@ -131,7 +131,7 @@ public class PantallaJuego extends Pantalla {
 
         Texture tarma = new Texture(Utils.obtenerRutaInterna("armas/arma1.png"));
         tarma.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
-        armas.add(new Arma("AK47", world, 0, -5, 65, 27, tarma, 3, 27, 25, 0.1f, 7, 1.0f, 25, 1));
+        armas.add(new Arma("AK47", world, 0, -5, 65, 27, tarma, 3, 27, 25, 0.1f, 7,5, 1.0f, 25, 1));
 
 
         // Spawns iniciales de slimes
