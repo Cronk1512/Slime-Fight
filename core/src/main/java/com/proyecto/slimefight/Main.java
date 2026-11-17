@@ -23,7 +23,7 @@ public class Main extends Game {
         ancho = Config.ancho;
         alto = Config.alto;
         // La primera pantalla que ve el jugador
-        setScreen(new PantallaJuego(this));
+        setScreen(new PantallaMenuPrincipal(this));
     }
 
     @Override
