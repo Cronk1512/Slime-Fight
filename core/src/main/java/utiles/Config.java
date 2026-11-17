@@ -23,5 +23,7 @@ public abstract class Config {
         public static final int LANZAR_ARMA = Keys.K;
     }
 
-
+    // Configuracion partida
+    public static int puntosParaGanar = 15;
+    public static int puntosParaModificadores = 0;
 }

@@ -30,6 +30,12 @@ public class Jugador {
     public Slime getSlime() { return slime; }
     public void setSlime(Slime s) { this.slime = s; }
 
+    public int getTotalPuntos() {
+        int total = 0;
+        for (Punto p : puntos) total += p.getValor();
+        return total;
+    }
+
     public Sprite getOjosSlime() {
         return ojosSlime;
     }

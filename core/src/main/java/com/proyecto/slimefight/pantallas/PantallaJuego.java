@@ -32,11 +32,11 @@ import java.util.Random;
 public class PantallaJuego extends Pantalla {
     private Stage stage;
     private TomarInput inputs = new TomarInput();
-    private Slime jugador;
-    private Slime botardo;
     private OrthographicCamera camara;
     private ExtendViewport viewport;
     float acumulador = 0;
+    private int[] puntosAntes = new int[0];
+    private boolean mostrandoPuntaje = false;
 
     private World world;
     private Box2DDebugRenderer box2DDebugRenderer;
@@ -74,23 +74,32 @@ public class PantallaJuego extends Pantalla {
         Texture bboca = new Texture(Utils.obtenerRutaInterna("bocas/boca1.png"));
         bojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        Texture vojo = new Texture(Utils.obtenerRutaInterna("ojos/ojos2.png"));
+        Texture vboca = new Texture(Utils.obtenerRutaInterna("bocas/boca2.png"));
+        bojo.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        bboca.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
         // Jugadores placeholder
         Jugador jugador1 = new Jugador(0, "Luxor89");
         Jugador jugador2 = new Jugador(1, "Botardo");
+        Jugador jugador3 = new Jugador(3, "Viscous");
         jugador1.setOjosSlime(new Sprite(tojo));
         jugador1.setBocaSlime(new Sprite(tboca));
         jugador1.setColorSlime(Color.WHITE);
         jugador2.setOjosSlime(new Sprite(bojo));
         jugador2.setBocaSlime(new Sprite(bboca));
         jugador2.setColorSlime(Color.SKY);
+        jugador3.setOjosSlime(new Sprite(vojo));
+        jugador3.setBocaSlime(new Sprite(vboca));
+        jugador3.setColorSlime(Color.GREEN);
 
         manager.añadirJugador(jugador1);
         manager.añadirJugador(jugador2);
+        manager.añadirJugador(jugador3);
 
         cargarRonda(mapas[mapaActual]);
         hud = new Hud(manager.getJugadores());
-        mostradorPuntaje = new MostradorPuntaje(manager.getJugadores());
+        mostradorPuntaje = new MostradorPuntaje();
     }
 
     private void cargarRonda(String ruta) {
@@ -152,7 +161,9 @@ public class PantallaJuego extends Pantalla {
         if (hud != null) hud.reiniciarCuentaAtras();
         if (hud != null) hud.actualizarSlimes();
 
-        if (mostradorPuntaje != null) mostradorPuntaje.actualizarSlimes();
+        puntosAntes = new int[manager.getJugadores().size()];
+        for (int i = 0; i < puntosAntes.length; i++)
+            puntosAntes[i] = manager.getJugadores().get(i).getPuntos().size(); // cantidad de entradas
     }
 
     private void descartarRonda() {
@@ -201,12 +212,22 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void update(float delta) {
+        if (mostrandoPuntaje) {                       // juego congelado mientras se ven los puntos
+            if (mostradorPuntaje.isTerminado()) {
+                mostradorPuntaje.ocultar();
+                mostrandoPuntaje = false;
+                mapaActual = (mapaActual + 1) % mapas.length;
+                cargarRonda(mapas[mapaActual]);
+            }
+            return;
+        }
+
         manager.update(delta, hud.isCuentaAtrasFinalizada());
 
         if (manager.consumirCambioDeMapa()) {
-            mapaActual = (mapaActual + 1) % mapas.length;   // o sorteado
-            cargarRonda(mapas[mapaActual]);
-            return;   // el resto del frame usaría objetos recién destruidos
+            mostradorPuntaje.mostrar(manager.getJugadores(), puntosAntes);
+            mostrandoPuntaje = true;
+            return;
         }
 
         for (Caja caja : cajas) {

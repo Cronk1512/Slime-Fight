@@ -3,6 +3,7 @@ package com.proyecto.slimefight;
 import com.badlogic.gdx.graphics.Color;
 import com.proyecto.slimefight.clases.Jugador;
 import com.proyecto.slimefight.clases.Punto;
+import utiles.Config;
 
 import java.util.ArrayList;
 
@@ -17,16 +18,18 @@ public class ManagerJuego {
     }
 
     public static final int MAX_JUGADORES = 4;
-    public static final int PUNTOS_PARA_GANAR = 15;
     public static final int PUNTOS_MODIFICADORES = 7;
     public static final Punto PUNTOS_VICTORIA = new Punto("Victoria", 2, Color.YELLOW);
-    public static final Punto PUNTOS_ELIMINACION = new Punto("Eliminacion", 1, Color.RED);
+    public static final Punto PUNTOS_ELIMINACION = new Punto("Eliminacion", 1, Color.SCARLET);
+    public static final Punto PUNTOS_REMONTAR = new Punto("Remontada", 1, Color.VIOLET);
     private static final float ESPERA_FIN_RONDA = 3f;
 
     private final ArrayList<Jugador> jugadores = new ArrayList<>();
     private Estado estado = Estado.CUENTA_ATRAS;
     private float timer;
     private Jugador ganadorPartida;
+    private Jugador peorActual;
+    private boolean empatePeor;
     private boolean cambioDeMapaPendiente;
 
     public Estado getEstado() {
@@ -36,7 +39,19 @@ public class ManagerJuego {
     public void update(float delta, boolean cuentaAtrasFinalizada) {
         switch (estado) {
             case CUENTA_ATRAS:
-                if (cuentaAtrasFinalizada) estado = Estado.JUGANDO;
+                if (cuentaAtrasFinalizada) {
+                    empatePeor = false;
+                    for (Jugador j : jugadores) {
+                        if (peorActual == null) peorActual = j;
+                        if (j.getTotalPuntos() < peorActual.getTotalPuntos()) {
+                            empatePeor = false;
+                            peorActual = j;
+                        } else if (j.getTotalPuntos() == peorActual.getTotalPuntos() && peorActual != j) {
+                            empatePeor = true;
+                        }
+                    }
+                    estado = Estado.JUGANDO;
+                }
                 break;
 
             case JUGANDO:
@@ -49,7 +64,10 @@ public class ManagerJuego {
                     }
                 }
                 if (vivos <= 1) {
-                    if (vivo != null) vivo.sumarPuntos(new Punto(PUNTOS_VICTORIA));
+                    if (vivo != null) {
+                        vivo.sumarPuntos(new Punto(PUNTOS_VICTORIA));
+                        if (vivo == peorActual && !empatePeor) vivo.sumarPuntos(new Punto(PUNTOS_REMONTAR));
+                    }
                     estado = Estado.FIN_RONDA;
                     timer = 0;
                 }
@@ -84,7 +102,7 @@ public class ManagerJuego {
         for (Jugador j : jugadores) {
             int puntosTotales = 0;
             for (Punto p : j.getPuntos()) puntosTotales += p.getValor();
-            if (puntosTotales < PUNTOS_PARA_GANAR) continue;
+            if (puntosTotales < Config.puntosParaGanar) continue;
             if (mejor == null || puntosTotales > puntosMejor) { mejor = j; puntosMejor = puntosTotales; empate = false; }
             else if (puntosTotales == puntosMejor) empate = true;
         }
