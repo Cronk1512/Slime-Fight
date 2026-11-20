@@ -1,11 +1,13 @@
 package com.proyecto.slimefight.pantallas;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -42,7 +44,18 @@ public class PantallaMenuPrincipal extends Pantalla {
         Gdx.input.setInputProcessor(stage);
 
         // fuente temporal
-        fuente = new BitmapFont();
+        FreeTypeFontGenerator generador = new FreeTypeFontGenerator(Utils.obtenerRutaInterna("fuentes/Matcha Boom.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        p.size = 24;
+        p.color = Color.LIME;
+        p.borderWidth = 2;
+        p.borderColor = Color.WHITE;
+        p.minFilter = Texture.TextureFilter.Nearest;
+        p.magFilter = Texture.TextureFilter.Nearest;
+        p.characters = FreeTypeFontGenerator.DEFAULT_CHARS;
+        fuente = generador.generateFont(p);
+        generador.dispose();
+
         fuente.getData().setScale(2f); // Escalar si se ve muy chica
 
         //tabla para organizar la interfaz
@@ -60,8 +73,14 @@ public class PantallaMenuPrincipal extends Pantalla {
         btnJugar.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                // Cambiar a la pantalla de juego
                 main.setScreen(new PantallaJuego(main));
+            }
+        });
+
+        TextButton btnMulti = new TextButton("MULTIJUGADOR", estiloBotón);
+        btnMulti.addListener(new ChangeListener() {
+            @Override public void changed(ChangeEvent event, Actor actor) {
+                main.setScreen(new PantallaMultijugador(main));
             }
         });
 
@@ -77,6 +96,7 @@ public class PantallaMenuPrincipal extends Pantalla {
         // Añadir elementos a la tabla con espaciados
         tabla.center();
         tabla.add(btnJugar).padBottom(20).row();
+        tabla.add(btnMulti).padBottom(20).row();
         tabla.add(btnSalir);
     }
 

@@ -14,7 +14,7 @@ import utiles.Constantes;
 import utiles.Utils;
 
 import java.util.Random;
-
+import com.proyecto.slimefight.red.SesionRed;
 public class Bala extends Actor {
     private Sprite textura;
     private final float direccionX, direccionY;
@@ -22,6 +22,7 @@ public class Bala extends Actor {
     public int dano;
     public float knockback;
     private float tiempoDeVida;
+    private final boolean cosmetica;   // en el cliente las balas son solo visuales
 
     private final Body cuerpo;
     private final Slime dueno;      // quien disparó (no se golpea a sí mismo)
@@ -48,6 +49,9 @@ public class Bala extends Actor {
         Vector2 vector = new Vector2(MathUtils.clamp(dirX, -1f, 1f), MathUtils.clamp(disp, -1f, 1f)).nor();
         direccionX = vector.x;
         direccionY = vector.y;
+        if (dirX == -1) {
+            textura.flip(true, false);
+        }
 
         // Cuerpo
         BodyDef bd = new BodyDef();
@@ -75,6 +79,8 @@ public class Bala extends Actor {
         this.dano = dano;
         this.knockback = knockback;
         tiempoDeVida = rango;
+
+        cosmetica = SesionRed.activa() && !SesionRed.esHost;
     }
 
     public void setPropiedades(boolean rotar, float escalaTexturaX, float escalaTexturaY) {
@@ -100,7 +106,7 @@ public class Bala extends Actor {
         }
 
         if (impactada) {
-            if (objetivo != null) objetivo.recibirDano(this);
+            if (objetivo != null && !cosmetica) objetivo.recibirDano(this);
             destruir();
             return;
         }

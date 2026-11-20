@@ -28,7 +28,6 @@ public class Slime extends Actor {
     // Sprites
     private Sprite ojos;
     private Sprite boca;
-    public Rectangle hitbox;
     private Rectangle mano;
     public Rectangle pisoCollider;
     public Rectangle paredizqCollider;
@@ -85,7 +84,6 @@ public class Slime extends Actor {
 
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
-        hitbox = new Rectangle(getX(), getY(), getScaleX(), getScaleY());
         pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
         paredizqCollider = new Rectangle(getX()-2, getY(), getWidth(), getHeight());
         paredderCollider = new Rectangle(getX()+2, getY(), getWidth(), getHeight());
@@ -283,8 +281,6 @@ public class Slime extends Actor {
         } else {
             mano = new Rectangle(getX() + getWidth() - 5, getY() + getHeight()/2, 1, 1);
         }
-
-        hitbox = new Rectangle(getX() + 5, getY() + 5, getWidth() -10, getHeight() -10);
     }
 
     public void morir() {
@@ -297,6 +293,33 @@ public class Slime extends Actor {
         }
         cuerpo.getWorld().destroyBody(cuerpo);
         remove();
+    }
+
+    /** Solo sube el impulso si el host reporta uno nuevo (knockback); si no, el decay local sigue. */
+    public void sincronizarImpulso(float v) {
+        if (Math.abs(v) > Math.abs(impulsoX) + 0.3f) impulsoX = v;
+    }
+
+    /** El cliente no ve las balas reales: el host le dice quien lo mato. */
+    public void forzarAtacante(int id) {
+        ultimoAtacanteId = id;
+        msUltimoGolpe = System.currentTimeMillis();
+    }
+
+    /** Correccion suave contra el estado autoritativo del host. */
+    public void corregirDesdeRed(float cx, float cy, float vx, float vy, float zonaMuerta, float factor) {
+        if (estaMuerto) return;
+        float px = getCentroXPx(), py = getCentroYPx();
+        float dx = cx - px, dy = cy - py;
+        float dist = (float) Math.sqrt(dx * dx + dy * dy);
+        if (dist > 96f) {                       // desincronizado de verdad: teletransporte
+            cuerpo.setTransform(cx / Constantes.PPM, cy / Constantes.PPM, 0);
+            cuerpo.setLinearVelocity(vx, vy);
+        } else if (dist > zonaMuerta) {         // solo se corrige el exceso sobre la zona muerta
+            float k = (dist - zonaMuerta) / dist * factor;
+            cuerpo.setTransform((px + dx * k) / Constantes.PPM, (py + dy * k) / Constantes.PPM, 0);
+        }
+        sincronizarConCuerpo();
     }
 
     @Override
@@ -386,6 +409,20 @@ public class Slime extends Actor {
     public boolean isEstaMuerto() {
         return estaMuerto;
     }
+
+    public float getCentroXPx() { return cuerpo.getPosition().x * Constantes.PPM; }
+
+    public float getCentroYPx() { return cuerpo.getPosition().y * Constantes.PPM; }
+
+    public float getVelX() { return cuerpo.getLinearVelocity().x; }
+
+    public float getVelY() { return cuerpo.getLinearVelocity().y; }
+
+    public boolean isVolteado() { return volteado; }
+
+    public float getImpulsoX() { return impulsoX; }
+
+    public void setPorcentajeVida(float v) { porcentajeVida = v; }
 
     public Texture getTexturaCuerpo() { return textura; }
 

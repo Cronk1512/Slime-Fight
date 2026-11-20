@@ -25,6 +25,8 @@ public class Caja extends Actor {
     private Slime recogidaPor;
     private boolean destruida = false;
 
+    private int id;
+
     public Caja(float x, float y, World mundo, Stage stage, ArrayList<Arma> armas) {
         textura = new Texture(Utils.obtenerRutaInterna("caja.png"));
         sprite = new Sprite(textura);
@@ -74,6 +76,14 @@ public class Caja extends Actor {
         sprite.draw(batch);
     }
 
+    public void sincronizar(float x, float y, float umbral) {
+        if (destruida) return;
+        float cx = x + getWidth() / 2f, cy = y + getHeight() / 2f;
+        float dx = cx - cuerpo.getPosition().x * Constantes.PPM;
+        float dy = cy - cuerpo.getPosition().y * Constantes.PPM;
+        if (dx * dx + dy * dy > umbral * umbral) cuerpo.setTransform(cx / Constantes.PPM, cy / Constantes.PPM, 0);
+    }
+
     public void generarArma(Slime slime) {
         Random random = new Random();
         Arma arma = new Arma(armasDisponibles.get(random.nextInt(armasDisponibles.size())));
@@ -101,4 +111,6 @@ public class Caja extends Actor {
 
     public Slime getRecogidaPor() { return recogidaPor; }
     public boolean isDestruida() { return destruida; }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 }
