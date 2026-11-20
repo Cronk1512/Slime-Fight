@@ -1,5 +1,6 @@
 Inicio/BotonJugar.png
 Inicio/BotonJugarPre.png
+Inicio/Titulo.png
 armas/arma1.png
 armas/arma2.png
 armas/arma3.png

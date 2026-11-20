@@ -10,9 +10,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.proyecto.slimefight.Main;
@@ -21,6 +23,7 @@ import utiles.Utils;
 
 public class PantallaMenuPrincipal extends Pantalla {
     private final Texture fondo;
+    private Texture tituloTex;
     private Stage stage;
     private SpriteBatch batch;
     private ExtendViewport viewport;
@@ -43,7 +46,14 @@ public class PantallaMenuPrincipal extends Pantalla {
         // asignamos el input processor al stage para que detecte clics en los botones
         Gdx.input.setInputProcessor(stage);
 
-        // fuente temporal
+        // Cargar título desde Inicio/Titulo.png
+        tituloTex = new Texture(Utils.obtenerRutaInterna("Inicio/Titulo.png"));
+        tituloTex.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+
+        Image imgTitulo = new Image(tituloTex);
+        imgTitulo.setScaling(Scaling.fit);
+
+        // fuente
         FreeTypeFontGenerator generador = new FreeTypeFontGenerator(Utils.obtenerRutaInterna("fuentes/Matcha Boom.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
         p.size = 24;
@@ -58,15 +68,15 @@ public class PantallaMenuPrincipal extends Pantalla {
 
         fuente.getData().setScale(2f); // Escalar si se ve muy chica
 
-        //tabla para organizar la interfaz
+        // tabla para organizar la interfaz
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        // Estilo básico de texto para los botones nativos de LibGDX (puedes cambiarlo por tu clase de botones)
+        // Estilo básico de texto para los botones nativos de LibGDX
         TextButton.TextButtonStyle estiloBotón = new TextButton.TextButtonStyle();
         estiloBotón.font = fuente;
-        estiloBotón.fontColor = com.badlogic.gdx.graphics.Color.WHITE;
+        estiloBotón.fontColor = Color.WHITE;
 
         // Botón Jugar
         TextButton btnJugar = new TextButton("JUGAR", estiloBotón);
@@ -77,9 +87,11 @@ public class PantallaMenuPrincipal extends Pantalla {
             }
         });
 
+        // Botón Multijugador
         TextButton btnMulti = new TextButton("MULTIJUGADOR", estiloBotón);
         btnMulti.addListener(new ChangeListener() {
-            @Override public void changed(ChangeEvent event, Actor actor) {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
                 main.setScreen(new PantallaMultijugador(main));
             }
         });
@@ -93,10 +105,11 @@ public class PantallaMenuPrincipal extends Pantalla {
             }
         });
 
-        // Añadir elementos a la tabla con espaciados
+        // Añadir título y botones a la tabla con espaciados
         tabla.center();
-        tabla.add(btnJugar).padBottom(20).row();
-        tabla.add(btnMulti).padBottom(20).row();
+        tabla.add(imgTitulo).width(340).height(280).padBottom(10).row();
+        tabla.add(btnJugar).padBottom(10).row();
+        tabla.add(btnMulti).padBottom(10).row();
         tabla.add(btnSalir);
     }
 
@@ -125,6 +138,7 @@ public class PantallaMenuPrincipal extends Pantalla {
     @Override
     public void dispose() {
         if (fondo != null) fondo.dispose();
+        if (tituloTex != null) tituloTex.dispose();
         if (batch != null) batch.dispose();
         if (stage != null) stage.dispose();
         if (fuente != null) fuente.dispose();
