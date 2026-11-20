@@ -1,6 +1,5 @@
 package com.proyecto.slimefight.actores;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -16,6 +15,8 @@ import java.util.Random;
 // Caja que contiene un arma aleatoria
 public class Caja extends Actor {
 
+    private static final Random RNG = new Random();
+
     private Body cuerpo;
     private int contactosPiso = 0;
     private Texture textura;
@@ -29,6 +30,7 @@ public class Caja extends Actor {
 
     public Caja(float x, float y, World mundo, Stage stage, ArrayList<Arma> armas) {
         textura = new Texture(Utils.obtenerRutaInterna("caja.png"));
+        textura.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         sprite = new Sprite(textura);
         this.stage = stage;
         armasDisponibles = armas;
@@ -66,18 +68,20 @@ public class Caja extends Actor {
     public void act(float delta) {
         super.act(delta);
 
+        if (destruida || cuerpo == null) return;
         setPosition(cuerpo.getPosition().x * Constantes.PPM - getWidth() / 2f, cuerpo.getPosition().y * Constantes.PPM - getHeight() / 2f);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
+        if (destruida || sprite == null) return;
         sprite.setPosition(getX(), getY());
         sprite.setSize(getWidth(), getHeight());
         sprite.draw(batch);
     }
 
     public void sincronizar(float x, float y, float umbral) {
-        if (destruida) return;
+        if (destruida || cuerpo == null) return;
         float cx = x + getWidth() / 2f, cy = y + getHeight() / 2f;
         float dx = cx - cuerpo.getPosition().x * Constantes.PPM;
         float dy = cy - cuerpo.getPosition().y * Constantes.PPM;
@@ -85,23 +89,37 @@ public class Caja extends Actor {
     }
 
     public void generarArma(Slime slime) {
-        Random random = new Random();
-        Arma arma = new Arma(armasDisponibles.get(random.nextInt(armasDisponibles.size())));
+        if (destruida || slime == null || armasDisponibles == null || armasDisponibles.isEmpty()) {
+            destruir();
+            return;
+        }
+
+        // Elige un arma al azar de las cargadas desde AyudanteArmas / JSON
+        Arma plantilla = armasDisponibles.get(RNG.nextInt(armasDisponibles.size()));
+        Arma arma = new Arma(plantilla);
+
         if (slime.getArma() != null) slime.getArma().destruir();
         slime.setArma(arma);
-        stage.addActor(arma);
+        if (stage != null) stage.addActor(arma);
         destruir();
     }
 
-
     public void empujar(float x, float y) {
+        if (destruida || cuerpo == null) return;
         cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x + x, cuerpo.getLinearVelocity().y + y);
     }
 
     public void destruir() {
         if (destruida) return;
         destruida = true;
-        cuerpo.getWorld().destroyBody(cuerpo);
+        if (cuerpo != null && cuerpo.getWorld() != null) {
+            cuerpo.getWorld().destroyBody(cuerpo);
+            cuerpo = null;
+        }
+        if (textura != null) {
+            textura.dispose();
+            textura = null;
+        }
         remove();
     }
 

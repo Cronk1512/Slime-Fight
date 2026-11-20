@@ -85,7 +85,8 @@ public class Arma extends Actor {
         this.anchoBala = Math.max(5f, Math.abs(arma.anchoBala));
         this.altoBala = Math.max(5f, Math.abs(arma.altoBala));
         this.tipo = arma.tipo;
-
+        float cant = Math.abs(arma.cantBalas);
+        this.cantBalas = (cant == 0f) ? 1f : cant;
         this.mundo = arma.mundo;
     }
 
