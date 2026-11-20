@@ -36,18 +36,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/**
- * Sin red o con SesionRed.esHost: este equipo corre la logica real (autoridad).
- * Cliente: simula todo localmente (prediccion) y se corrige con los snapshots del host.
- *
- * Protocolo en partida:
- *   cliente -> host : IN|seq|mascara        (cada frame)    BYE
- *   host -> cliente : ST|ronda|tick|flags|slimes|cajas      CLOSE
- *     flags  = bit0: cuenta atras terminada
- *     slime  = id,x*10,y*10,vx*100,vy*100,flags,input,impulso*100,vida,armaTipo,armaSerial,atacante   (separados por ';')
- *              flags: bit0 muerto, bit1 volteado
- *     caja   = id,x*10,y*10
- */
 public class PantallaJuego extends Pantalla {
     private static final long TIMEOUT_MS = 6000;
     private static final float INTERVALO_SNAP = 1f / 30f;
@@ -80,10 +68,10 @@ public class PantallaJuego extends Pantalla {
 
     ArrayList<Slime> slimes;
 
-    // ---- Red
+    // Red
     private final boolean enRed = SesionRed.activa();
     private final boolean esCliente = enRed && !SesionRed.esHost;
-    private final boolean esHost = !esCliente;        // sin red tambien es "host"
+    private final boolean esHost = !esCliente;        // sin red tambien es host
     private boolean salido = false;
 
     private int ronda = 0;
@@ -212,7 +200,7 @@ public class PantallaJuego extends Pantalla {
             slimes.add(s);
         }
 
-        // Spawns de cajas: solo el host decide, el cliente las recibe por snapshot
+        // Spawns de cajas
         if (!esCliente) generarArmas(ayudanteMapas.getPuntosDeArmas().size());
 
         // Spawns iniciales de slimes
@@ -334,10 +322,10 @@ public class PantallaJuego extends Pantalla {
         }
         cajas.removeIf(Caja::isDestruida);
 
-        // Spawnear cajas cada ~15s (solo host)
+        // Spawnear cajas cada ~12s
         if (!esCliente) {
             timerArmas += delta;
-            if (timerArmas >= 15f && cajas.size() < 6) {
+            if (timerArmas >= 12f && cajas.size() < 6) {
                 generarArmas(2);
                 timerArmas = 0;
             }
@@ -348,7 +336,7 @@ public class PantallaJuego extends Pantalla {
         for (Slime slime : slimes) {
             if (slime.isEstaMuerto()) continue;
             slime.setBloqueado(!go);
-            // la muerte por caida la decide el host; el cliente espera el snapshot
+            // la muerte por caida la decide el host
             if (!esCliente && slime.getY() < ayudanteMapas.getyLetal()) {
                 slime.morir();
                 continue;
@@ -462,7 +450,7 @@ public class PantallaJuego extends Pantalla {
                     break;
                 }
                 case "PERFIL":
-                case "HELLO": // un cliente que no recibio START sigue en el lobby
+                case "HELLO":
                     SesionRed.red.enviar("START", m.origen);
                     break;
                 case "BYE":

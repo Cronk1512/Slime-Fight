@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -43,20 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * Lobby multijugador por UDP con personalizacion de slimes.
- *
- * Protocolo (texto, campos separados por '|'; "jugador" = nombre:color:ojos:boca:listo):
- *   cliente -> host : HELLO|jugador   PERFIL|jugador   BYE   BUSCAR (broadcast LAN)
- *   host -> cliente : WELCOME|id   LOBBY|id:jugador;id:jugador|segundosParaEmpezar(-1 = no)
- *                     START   FULL   CLOSE   ANUNCIO|nombre|n|max
- *
- * El cliente reenvia su PERFIL cada segundo (sirve de keep-alive y corrige paquetes perdidos).
- * Cuando todos (minimo 2) estan listos, el host hace una cuenta regresiva y manda START.
- *
- * Los Jugador que se crean aca NO llevan Sprites de ojos/boca: las texturas del lobby se
- * liberan al salir, asi que PantallaJuego arma los Sprites desde los indices (ver Jugador.getRutaOjos()).
- */
+
 public class PantallaMultijugador extends Pantalla {
 
     private enum Estado { MENU, HOST, CLIENTE_CONECTANDO, CLIENTE_EN_LOBBY }
@@ -91,6 +79,7 @@ public class PantallaMultijugador extends Pantalla {
     private Texture pixel;
     private TextureRegionDrawable blanco;
     private BitmapFont fuente;
+    private BitmapFont fuenteCampo;
     private TextButton.TextButtonStyle estiloBoton;
     private Label.LabelStyle estiloLabel;
     private TextField.TextFieldStyle estiloCampo;
@@ -192,8 +181,20 @@ public class PantallaMultijugador extends Pantalla {
         batch = new SpriteBatch();
         Gdx.input.setInputProcessor(stage);
 
-        fuente = new BitmapFont();
-        fuente.getData().setScale(1.4f);
+        FreeTypeFontGenerator generador = new FreeTypeFontGenerator(Utils.obtenerRutaInterna("fuentes/Matcha Boom.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter p = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        p.size = 24;
+        p.color = Color.LIME;
+        p.borderWidth = 2;
+        p.borderColor = Color.WHITE;
+        p.minFilter = Texture.TextureFilter.Nearest;
+        p.magFilter = Texture.TextureFilter.Nearest;
+        p.characters = FreeTypeFontGenerator.DEFAULT_CHARS;
+        fuente = generador.generateFont(p);
+        generador.dispose();
+
+        fuenteCampo = new BitmapFont();
+        fuenteCampo.getData().setScale(1.6f);
 
         cargarTexturasSlime();
 
@@ -219,7 +220,7 @@ public class PantallaMultijugador extends Pantalla {
         fondoCampo.setLeftWidth(8);
         fondoCampo.setRightWidth(8);
         estiloCampo = new TextField.TextFieldStyle();
-        estiloCampo.font = fuente;
+        estiloCampo.font = fuenteCampo;
         estiloCampo.fontColor = Color.WHITE;
         estiloCampo.cursor = cursor;
         estiloCampo.selection = seleccion;

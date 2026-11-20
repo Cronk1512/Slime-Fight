@@ -68,12 +68,12 @@ public class PantallaMenuPrincipal extends Pantalla {
 
         fuente.getData().setScale(2f); // Escalar si se ve muy chica
 
-        // tabla para organizar la interfaz
+        // tabla
         Table tabla = new Table();
         tabla.setFillParent(true);
         stage.addActor(tabla);
 
-        // Estilo básico de texto para los botones nativos de LibGDX
+        // Estilo
         TextButton.TextButtonStyle estiloBotón = new TextButton.TextButtonStyle();
         estiloBotón.font = fuente;
         estiloBotón.fontColor = Color.WHITE;

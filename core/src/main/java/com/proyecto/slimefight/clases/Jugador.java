@@ -8,8 +8,6 @@ import com.proyecto.slimefight.actores.Slime;
 import java.util.ArrayList;
 
 public class Jugador {
-    // TODO en el futuro debe contener su hilo cliente o algo asi ns
-
     // Opciones de personalizacion disponibles (cambialas si agregas assets: ojos/ojosN.png, bocas/bocaN.png)
     public static final int CANT_OJOS = 3;
     public static final int CANT_BOCAS = 3;
