@@ -30,6 +30,7 @@ public class Arma extends Actor {
     private World mundo;
     private Texture texturaBala;
     private boolean estaRoto = false;
+    private int tipo = 0;
 
     private float timerCooldown = 0;
 
@@ -83,6 +84,7 @@ public class Arma extends Actor {
         this.dispersion = arma.dispersion;
         this.anchoBala = Math.max(5f, Math.abs(arma.anchoBala));
         this.altoBala = Math.max(5f, Math.abs(arma.altoBala));
+        this.tipo = arma.tipo;
 
         this.mundo = arma.mundo;
     }
@@ -183,4 +185,8 @@ public class Arma extends Actor {
     public boolean isEstaRoto() {
         return estaRoto;
     }
+
+
+    public int getTipo() { return tipo; }
+    public void setTipo(int tipo) { this.tipo = tipo; }
 }
