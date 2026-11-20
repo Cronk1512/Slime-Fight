@@ -81,7 +81,21 @@ public class Slime extends Actor {
     private long msUltimoGolpe;
     private static final long VENTANA_ATRIBUCION_MS = 4000; // Si se muere fuera de esta ventana entonce no points for u (rip bozo + L + skill issue)
     private java.util.function.Consumer<Slime> oyenteMuerte; // esto es re piola te deja guardarte una funcion de otro archivo basicamente
+    //Emotes
+    private Sprite spriteEmote;
+    private float timerEmote = 0f;
+    private static final float DURACION_EMOTE = 1.8f; // segundos visible
 
+    public void mostrarEmote(Texture texturaEmote) {
+        if (texturaEmote == null) return;
+        if (spriteEmote == null) {
+            spriteEmote = new Sprite(texturaEmote);
+            spriteEmote.setSize(20, 20); // ajusta el tamaño según tu escala en px
+        } else {
+            spriteEmote.setTexture(texturaEmote);
+        }
+        timerEmote = DURACION_EMOTE;
+    }
     public Slime(Body cuerpo, Sprite ojos, Sprite boca, Color color, boolean dadoVuelta) {
         this.setSize(width, height);
         pisoCollider = new Rectangle(getX(), getY()-2, getWidth(), getHeight());
@@ -108,6 +122,10 @@ public class Slime extends Actor {
         sincronizarConCuerpo();
         actualizarColliders();
         if (arma != null && mano != null) arma.update(delta, mano.getX(), mano.getY(), volteado, this);
+        if (timerEmote > 0f) {
+            timerEmote -= delta;
+            if (timerEmote < 0f) timerEmote = 0f;
+        }
     }
 
     private void sincronizarConCuerpo() {
@@ -340,6 +358,18 @@ public class Slime extends Actor {
 
         ojos.draw(batch);
         boca.draw(batch);
+        if (timerEmote > 0f && spriteEmote != null) {
+            // Pequeño rebote/flotación arriba de la cabeza del slime
+            float flotarY = MathUtils.sin((DURACION_EMOTE - timerEmote) * 8f) * 2f;
+            float ex = getX() + (getWidth() - spriteEmote.getWidth()) / 2f;
+            float ey = getY() + getHeight() + 6f + flotarY;
+
+            // Desvanece suavemente en los últimos 0.4s
+            float alpha = Math.min(1f, timerEmote / 0.4f);
+            spriteEmote.setPosition(ex, ey);
+            spriteEmote.setAlpha(alpha);
+            spriteEmote.draw(batch);
+        }
     }
 
     public void recibirDano(Bala bala) {

@@ -11,6 +11,7 @@ public class TomarInput extends InputAdapter {
     public boolean abajo;
     public boolean disparar;
     public boolean lanzar_arma;
+    public boolean emote;
 
     @Override
     public boolean keyDown(int keycode) {
@@ -32,6 +33,9 @@ public class TomarInput extends InputAdapter {
                 break;
             case Controles.LANZAR_ARMA:
                 lanzar_arma = true;
+                break;
+            case Controles.EMOTE:
+                emote=true;
                 break;
         }
         return true;
@@ -57,6 +61,9 @@ public class TomarInput extends InputAdapter {
                 break;
             case Controles.LANZAR_ARMA:
                 lanzar_arma = false;
+                break;
+            case Controles.EMOTE:
+                emote=false;
                 break;
         }
         return true;

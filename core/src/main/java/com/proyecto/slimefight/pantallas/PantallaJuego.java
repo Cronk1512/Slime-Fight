@@ -290,7 +290,6 @@ public class PantallaJuego extends Pantalla {
         mapaActual = esCliente ? (rondaHost - 1) % mapas.length : (mapaActual + 1) % mapas.length;
         cargarRonda(mapas[mapaActual]);
     }
-
     private void update(float delta) {
         if (enRed) {
             if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) { salirDePartida(); return; }
@@ -355,7 +354,13 @@ public class PantallaJuego extends Pantalla {
                 continue;
             }
             TomarInput input = inputsPorSlime.get(slime.getId());
-            slime.update(delta, input != null ? input : new TomarInput());
+            if (input == null) input = new TomarInput();
+
+            if (go && input.emote) {
+                slime.mostrarEmote(textura("emotes/PulgarArr.png"));
+            }
+
+            slime.update(delta, input);
         }
 
         float tiempoFrame = Math.min(delta, 0.25f); // Limite a delta en caso de lag spike
@@ -370,7 +375,6 @@ public class PantallaJuego extends Pantalla {
         batch.setProjectionMatrix(camara.combined);
         renderer.setView(camara);
     }
-
     private void generarArmas(int cant) {
         if (ayudanteMapas == null || ayudanteMapas.getPuntosDeArmas() == null
             || ayudanteMapas.getPuntosDeArmas().isEmpty() || armas == null || armas.isEmpty()) {

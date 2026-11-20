@@ -14,6 +14,7 @@ bocas/boca3.png
 caja.png
 efecto_sonido/DisparoAK.mp3
 ejemplo intro.png
+emotes/PulgarArr.png
 fondo_puntos.png
 fuentes/Daydream DEMO.ttf
 fuentes/Matcha Boom.ttf
