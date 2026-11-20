@@ -69,7 +69,7 @@ public class PantallaJuego extends Pantalla {
     private MostradorPuntaje mostradorPuntaje;
     private final Map<Integer, TomarInput> inputsPorSlime = new HashMap<>();
     private int idLocal = 0;   // el slime que controla esta PC
-    private final String[] mapas = {"mapa/mapaTest.tmx" /*, ... , ...*/};
+    private final String[] mapas = {"mapa/MapaTuberias1.tmx" /*, ... , ...*/};
     private int mapaActual = 0;
     private ManagerJuego manager = new ManagerJuego();
     private float timerArmas;

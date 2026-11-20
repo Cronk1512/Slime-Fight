@@ -1,11 +1,15 @@
 Inicio/BotonJugar.png
 Inicio/BotonJugarPre.png
 armas/arma1.png
+armas/arma2.png
+armas/arma3.png
+armas/arma4.png
 balas/default.png
 bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
 caja.png
+efecto_sonido/DisparoAK.mp3
 ejemplo intro.png
 fondo_puntos.png
 fuentes/Daydream DEMO.ttf
@@ -16,6 +20,7 @@ intro/3_placeholder.png
 intro/fight_placeholder.png
 libgdx.png
 mapa/MapaGame.tmx
+mapa/MapaTuberias1.tmx
 mapa/SlimeFight.tiled-project
 mapa/SlimeFight.tiled-session
 mapa/TileSet/GrassLand_Background_1.tsx
@@ -33,6 +38,8 @@ mapa/TileSet/Tiles/GrassLand_TallGrass_2.png
 mapa/TileSet/Tiles/GrassLand_Tree.png
 mapa/TileSet/Tiles/Grassland_Terrain_ExtraTiles.png
 mapa/TileSet/Tiles/testtileset.png
+mapa/TileSet/Tiles/tilesettuberias.png
+mapa/TileSet/TilesetTuberias.tsx
 mapa/mapaTest.tmx
 ojos/ojos1.png
 ojos/ojos2.png
