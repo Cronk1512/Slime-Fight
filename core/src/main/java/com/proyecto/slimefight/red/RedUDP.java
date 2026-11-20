@@ -23,7 +23,6 @@ public class RedUDP {
     private volatile boolean activo = false;
     private final ConcurrentLinkedQueue<Mensaje> entrada = new ConcurrentLinkedQueue<>();
 
-    /** puerto > 0: puerto fijo (host). puerto <= 0: puerto efimero (cliente). */
     public void abrir(int puerto) throws SocketException {
         socket = new DatagramSocket(null);
         socket.setReuseAddress(true);
@@ -48,7 +47,6 @@ public class RedUDP {
         hilo.start();
     }
 
-    /** Devuelve el siguiente mensaje recibido o null si no hay. */
     public Mensaje recibir() {
         return entrada.poll();
     }
@@ -79,11 +77,10 @@ public class RedUDP {
 
     public void cerrar() {
         activo = false;
-        if (socket != null) socket.close(); // desbloquea receive()
+        if (socket != null) socket.close();
         entrada.clear();
     }
 
-    /** IP de la LAN de este dispositivo (para mostrarsela al host). */
     public static String ipLocal() {
         try {
             Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
