@@ -51,7 +51,9 @@ import java.util.Set;
 public class PantallaJuego extends Pantalla {
     private static final long TIMEOUT_MS = 6000;
     private static final float INTERVALO_SNAP = 1f / 30f;
+    private static final Random RNG = new Random();
 
+    private AyudanteArmas ayudanteArmas;
     private Stage stage;
     private TomarInput inputs = new TomarInput();
     private OrthographicCamera camara;
@@ -183,9 +185,15 @@ public class PantallaJuego extends Pantalla {
         stage = new Stage(viewport);
         slimes = new ArrayList<>();
         cajas = new ArrayList<>();
-        armas = new ArrayList<>();
         Gdx.input.setInputProcessor(inputs);
         timerArmas = 0;
+
+        // Cargar armas desde JSON (despues de crear world y ayudanteMapas)
+        ayudanteArmas = new AyudanteArmas();
+        armas = ayudanteArmas.cargarArmasDesdeJson("armas/armas.json", world);
+        for (int i = 0; i < armas.size(); i++) {
+            armas.get(i).setTipo(i); // indice en la lista "armas" (se manda por red)
+        }
 
         world.setContactListener(new ContactListener() {
             @Override public void beginContact(Contact c) { Utils.contactoPies(c, 1); Utils.contactoParedes(c, 1); Utils.contactoCaja(c); Utils.contactoBala(c); }
@@ -203,12 +211,6 @@ public class PantallaJuego extends Pantalla {
             s.setOyenteMuerte(this::alMorirSlime);
             slimes.add(s);
         }
-
-        Texture tarma = textura("armas/arma1.png");
-        Texture tbala = textura("balas/default.png");
-        Arma ak47 = new Arma("AK47", world, 0, -5, 65, 27, tarma, 3, 27, 25, 0.1f, 7, 5, tbala, 1.0f, 25, 1);
-        ak47.setTipo(0); // indice en la lista "armas" (se manda por red)
-        armas.add(ak47);
 
         // Spawns de cajas: solo el host decide, el cliente las recibe por snapshot
         if (!esCliente) generarArmas(ayudanteMapas.getPuntosDeArmas().size());
@@ -232,6 +234,10 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void descartarRonda() {
+        if (ayudanteArmas != null) {
+            ayudanteArmas.dispose();
+            ayudanteArmas = null;
+        }
         timerCamara = 0;
         inputsPorSlime.clear();
         serialArma.clear();
@@ -366,10 +372,15 @@ public class PantallaJuego extends Pantalla {
     }
 
     private void generarArmas(int cant) {
+        if (ayudanteMapas == null || ayudanteMapas.getPuntosDeArmas() == null
+            || ayudanteMapas.getPuntosDeArmas().isEmpty() || armas == null || armas.isEmpty()) {
+            return;
+        }
+
+        ArrayList<Vector2> puntos = ayudanteMapas.getPuntosDeArmas();
         ArrayList<Vector2> puntosExcluidos = new ArrayList<>();
         for (int i = 0; i < cant; i++) {
-            Random rng = new Random();
-            Vector2 v = ayudanteMapas.getPuntosDeArmas().get(rng.nextInt(0, ayudanteMapas.getPuntosDeArmas().size()));
+            Vector2 v = puntos.get(RNG.nextInt(puntos.size()));
             if (puntosExcluidos.contains(v)) { // para que no se generen 2 cajas en el mismo spot
                 i--;
                 continue;
@@ -380,7 +391,7 @@ public class PantallaJuego extends Pantalla {
             cajas.add(caja);
             stage.addActor(caja);
 
-            if (puntosExcluidos.size() == ayudanteMapas.getPuntosDeArmas().size()) puntosExcluidos.clear();
+            if (puntosExcluidos.size() == puntos.size()) puntosExcluidos.clear();
         }
     }
 

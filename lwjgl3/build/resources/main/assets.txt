@@ -4,7 +4,9 @@ armas/arma1.png
 armas/arma2.png
 armas/arma3.png
 armas/arma4.png
+armas/armas.json
 balas/default.png
+balas/default2.png
 bocas/boca1.png
 bocas/boca2.png
 bocas/boca3.png
