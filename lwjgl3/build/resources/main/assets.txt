@@ -1,3 +1,5 @@
+Inicio/BotonJugar.png
+Inicio/BotonJugarPre.png
 armas/arma1.png
 bala.png
 bocas/boca1.png
