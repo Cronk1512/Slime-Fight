@@ -1,5 +1,5 @@
 {
-    "activeFile": "mapaTest.tmx",
+    "activeFile": "MapaTuberias1.tmx",
     "expandedProjectPaths": [
         "TileSet",
         "."
@@ -11,6 +11,17 @@
             "viewCenter": {
                 "x": 800.4974843122844,
                 "y": 797.7839335180056
+            }
+        },
+        "MapaTuberias1.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 449.5,
+                "y": 414
             }
         },
         "TileSet/GrassLand_Background_1.tsx": {
@@ -58,15 +69,17 @@
     "map.lastUsedFormat": "tmx",
     "openFiles": [
         "MapaGame.tmx",
-        "mapaTest.tmx"
+        "mapaTest.tmx",
+        "MapaTuberias1.tmx"
     ],
     "project": "SlimeFight.tiled-project",
     "recentFiles": [
+        "MapaGame.tmx",
+        "mapaTest.tmx",
+        "MapaTuberias1.tmx",
         "TileSet/TestTileset.tsx",
         "TileSet/TilesetTuberias.tsx",
         "TileSet/tuberias.tsx",
-        "MapaGame.tmx",
-        "mapaTest.tmx",
         "tuberias.tsx"
     ],
     "tileset.lastUsedFormat": "tsx"
