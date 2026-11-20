@@ -65,7 +65,6 @@ public class Arma extends Actor {
 
     public Arma(Arma arma) {
         sprite = new Sprite(arma.sprite);
-
         setWidth(arma.getWidth());
         setHeight(arma.getHeight());
         sprite.setSize(arma.getWidth(), arma.getHeight());
